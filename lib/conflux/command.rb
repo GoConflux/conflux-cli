@@ -1,39 +1,66 @@
 require 'conflux/helpers'
+require 'pry'
 require 'optparse'
+require 'pathname'
+
+GLOBAL = 'global'
 
 module Conflux
   module Command
+    extend Conflux::Helpers
 
     class CommandFailed < RuntimeError; end
 
-    extend Conflux::Helpers
-
     def self.load
-      # Require all the command files
-      Dir[File.join(File.dirname(__FILE__), 'command', '*.rb')].each do |file|
+      # Require all the ruby command files
+      command_file_paths.each do |file|
+        # require actual file
         require file
+
+        # Get basename for the file -- w/out extension
+        basename = get_basename_from_file(file)
+
+        # If this is the global command file
+        if basename === GLOBAL
+          # Camcelcase the basename to be the module name
+          module_name = camelize(basename)
+
+          # Store reference to the class associated with this basename
+          command_class = Conflux::Command.const_get(module_name)
+
+          # iterate over each of the user-defined mtehods in the class and
+          # add them to the @@commands map
+          command_class.instance_methods(false).each { |method|
+            register_command({
+              method: method,
+              klass: command_class
+            })
+          }
+        else
+
+        end
       end
     end
 
     def self.run(cmd, args = [])
-      object, method = prepare_run(cmd, args.dup)
-      object.send(method)
+      command_class, method = prep_for_run(cmd, args.dup)
+      command_class.send(method)
     end
 
-    def self.prepare_run(cmd, args = [])
-      command = parse(cmd)
+    def self.prep_for_run(cmd, args = [])
+      command = get_cmd(cmd)
 
       # If seeking help
       if args.include?('-h') || args.include?('--help')
         args.unshift(cmd) unless cmd =~ /^-.*/
         cmd = 'help'
-        command = parse(cmd)
+        command = get_cmd(cmd)
       end
 
       # If seeking version info
       if cmd == '--version'
         cmd = 'version'
-        command = parse(cmd)
+        command = get_cmd(cmd)
       end
 
       @current_command = cmd
@@ -41,8 +68,6 @@ module Conflux
 
       opts = {}
       invalid_options = []
-
-      puts "CURRENT COMMAND #{command}"
 
       option_parser = OptionParser.new do |parser|
         # remove OptionParsers Officious['version'] to avoid conflicts
@@ -102,11 +127,23 @@ module Conflux
       end
     end
 
+    def self.get_basename_from_file(file)
+      basename = Pathname.new(file).basename.to_s
+      basename = basename[0..(basename.rindex('.') - 1)]
+      basename
+    end
+
+    def self.command_file_paths
+      base_file = File.join(File.dirname(__FILE__), 'command', 'base.rb')
+      Dir[File.join(File.dirname(__FILE__), 'command', '*.rb')] - [base_file]
+    end
+
     def self.global_options
       @global_options ||= []
     end
 
-    def self.parse(cmd)
+    def self.get_cmd(cmd)
+      cmd = cmd.to_sym
       commands[cmd] || commands[command_aliases[cmd]]
     end
 
@@ -114,8 +151,16 @@ module Conflux
       @@commands ||= {}
     end
 
+    def self.register_command(cmd_info)
+      commands[cmd_info[:method]] = cmd_info
+    end
+
     def self.command_aliases
       @@command_aliases ||= {}
+    end
+
+    def self.namespaces
+      @@namespaces ||= {}
     end
 
   end

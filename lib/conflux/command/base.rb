@@ -1,14 +1,11 @@
 require 'conflux/command'
+require 'conflux/helpers'
 
 class Conflux::Command::Base
   include Conflux::Helpers
 
   attr_reader :args
   attr_reader :options
-
-  def self.namespace
-    self.to_s.split("::").last.downcase
-  end
 
   def initialize(args = [], options = {})
     @args = args

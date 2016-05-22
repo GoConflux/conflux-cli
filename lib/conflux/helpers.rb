@@ -1,26 +1,26 @@
-
 module Conflux
   module Helpers
-
     extend self
 
-    def error(message, report = false)
-      # if Conflux::Helpers.error_with_failure
-      #   display("failed")
-      #   Conflux::Helpers.error_with_failure = false
-      # end
-      #
-      # $stderr.puts(format_with_bang(message))
-      # rollbar_id = Rollbar.error(message) if report
-      # $stderr.puts("Error ID: #{rollbar_id}") if rollbar_id
-
-      puts message
+    def error(msg = '')
+      $stderr.puts(format_with_bang(msg))
       exit(1)
     end
 
-    def display(msg = '', new_line = true)
-      new_line ? puts(msg) : print(msg)
+    def display(msg = '')
+      puts(msg)
       $stdout.flush
+    end
+
+    def format_with_bang(message)
+      return '' if message.to_s.strip == ''
+      " !    " + message.encode('utf-8', 'binary', invalid: :replace, undef: :replace)
+                     .split("\n")
+                     .join("\n !    ")
+    end
+
+    def camelize(str)
+      str.split('_').collect(&:capitalize).join
     end
 
   end

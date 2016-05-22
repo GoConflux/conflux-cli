@@ -1,6 +1,8 @@
+require 'conflux/helpers'
 
 module Conflux
   module CLI
+    extend Conflux::Helpers
 
     def self.start!(*args)
       # Setup StdIn/StdOut sync
@@ -10,7 +12,6 @@ module Conflux
       # Strip out command
       command = args.shift.strip rescue "help"
 
-      # only load up cli if it makes it to this point
       require 'conflux/command'
 
       # Load up all commands
@@ -20,14 +21,11 @@ module Conflux
       Conflux::Command.run(command, args)
 
     rescue Errno::EPIPE => e
-      puts(e.message)
-
+      error(e.message)
     rescue Interrupt => e
-      puts("Command cancelled.", false)
-
+      error("Command cancelled.")
     rescue => error
-      puts(error)
-      exit(1)
+      error(error)
     end
 
   end
