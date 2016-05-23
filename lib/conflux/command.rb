@@ -1,4 +1,5 @@
 require 'conflux/helpers'
+require 'conflux/version'
 require 'pry'
 require 'optparse'
 require 'pathname'
@@ -43,26 +44,15 @@ module Conflux
     end
 
     def self.run(cmd, args = [])
+      respond_with_help and return if seeking_help?(cmd, args)
+      respond_with_version and return if seeking_version?(cmd, args)
+
       command_class, method = prep_for_run(cmd, args.dup)
       command_class.send(method)
     end
 
     def self.prep_for_run(cmd, args = [])
       command = get_cmd(cmd)
-
-      # If seeking help
-      if args.include?('-h') || args.include?('--help')
-        args.unshift(cmd) unless cmd =~ /^-.*/
-        cmd = 'help'
-        command = get_cmd(cmd)
-      end
-
-      # If seeking version info
-      if cmd == '--version'
-        cmd = 'version'
-        command = get_cmd(cmd)
-      end
-
       @current_command = cmd
       @anonymized_args, @normalized_args = [], []
 
@@ -125,6 +115,22 @@ module Conflux
           "See `conflux help` for a list of available commands."
         ].compact.join("\n"))
       end
+    end
+
+    def self.respond_with_help
+      display 'help'
+    end
+
+    def self.respond_with_version
+      display "conflux #{Conflux::VERSION}"
+    end
+
+    def self.seeking_help?(cmd, args)
+      args.length == 0 && (cmd == 'help' || cmd == '-h')
+    end
+
+    def self.seeking_version?(cmd, args)
+      args.length == 0 && (cmd == '--version' || cmd == '-v')
     end
 
     def self.get_basename_from_file(file)
