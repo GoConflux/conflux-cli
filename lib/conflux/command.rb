@@ -126,7 +126,7 @@ module Conflux
     end
 
     def self.seeking_help?(cmd, args)
-      args.length == 0 && (cmd == 'help' || cmd == '-h')
+      args.length == 0 && (cmd == 'help' || cmd == '-h' || cmd.empty?)
     end
 
     def self.seeking_version?(cmd, args)
@@ -140,8 +140,8 @@ module Conflux
     end
 
     def self.command_file_paths
-      base_file = File.join(File.dirname(__FILE__), 'command', 'base.rb')
-      Dir[File.join(File.dirname(__FILE__), 'command', '*.rb')] - [base_file]
+      abstract_file = File.join(File.dirname(__FILE__), 'command', 'abstract_command.rb')
+      Dir[File.join(File.dirname(__FILE__), 'command', '*.rb')] - [abstract_file]
     end
 
     def self.global_options

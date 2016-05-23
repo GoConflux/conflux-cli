@@ -1,7 +1,7 @@
 require 'conflux/command'
 require 'conflux/helpers'
 
-class Conflux::Command::Base
+class Conflux::Command::AbstractCommand
   include Conflux::Helpers
 
   attr_reader :args
