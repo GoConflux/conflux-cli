@@ -21,11 +21,11 @@ module Conflux
       Conflux::Command.run(command, args)
 
     rescue Errno::EPIPE => e
-      error(e.message)
+      error e.message
     rescue Interrupt => e
-      error("Command cancelled.")
-    rescue => error
-      error(error)
+      error "Command cancelled."
+    rescue => e
+      error e
     end
 
   end

@@ -1,6 +1,5 @@
 require 'conflux/helpers'
 require 'conflux/version'
-require 'pry'
 require 'optparse'
 require 'pathname'
 
