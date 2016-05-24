@@ -110,5 +110,21 @@ module Conflux
       ENV['CONFLUX_HOST'] || 'http://api.goconflux.com'
     end
 
+    def is_rails_project?
+      File.exists?(File.join(Dir.pwd, 'Gemfile'))
+    end
+
+    def is_node_project?
+      File.exists?(File.join(Dir.pwd, 'package.json'))
+    end
+
+    def conflux_gem
+      'conflux-rb'
+    end
+
+    def conflux_module
+      'conflux-js'
+    end
+
   end
 end

@@ -37,6 +37,8 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
       selected_app_slug = app_slugs[selected_app_index]
 
+      display 'Configuring manifest.json...'
+
       # Fetch manifest info for that selected app
       manifest_json = apps_api.manifest(selected_app_slug)
 
@@ -45,7 +47,14 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
         f.write(JSON.pretty_generate(manifest_json))
       end
 
-      display("Established new connection between this directory and the Conflux app: #{manifest_json['name']}")
+      display("Successfully connected project to Conflux app: #{manifest_json['name']}")
+
+      # Determine which conflux gem/client to install based on type of project
+      if is_rails_project?
+        # Upsert Gemfile with conflux_gem and run system gem install conflux_gem
+      elsif is_node_project?
+        # Upsert package.json with conflux_module and run system npm install conflux_module
+      end
     end
 
   end
