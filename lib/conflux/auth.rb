@@ -1,37 +1,34 @@
 require 'conflux/helpers'
 require 'conflux/helpers/env'
+require 'conflux/api/users'
 require 'netrc'
 require 'fileutils'
 
 module Conflux
   module Auth
     extend Conflux::Helpers
+    extend self
 
-    attr_reader :credentials
-
-    def self.login
+    def login
       @credentials = nil
       get_credentials
     end
 
-    def self.logout
+    def logout
       delete_credentials
     end
 
-    def self.get_credentials
+    def get_credentials
       @credentials ||= ask_for_and_save_credentials
     end
 
-    def self.ask_for_and_save_credentials
+    def ask_for_and_save_credentials
       begin
         @credentials = ask_for_credentials
-
-        display "Logged in as #{@credentials[0]} of Refletktive"
 
         write_credentials
 
         # check user is authed with auth_test ajax call
-
         @credentials
       rescue => e
         delete_credentials
@@ -40,7 +37,7 @@ module Conflux
       end
     end
 
-    def self.write_credentials
+    def write_credentials
       # Create all the parent directories for the .netrc file if they don't already exist
       FileUtils.mkdir_p(File.dirname(netrc_path))
 
@@ -56,24 +53,50 @@ module Conflux
       netrc.save
     end
 
-    def self.delete_credentials
+    def delete_credentials
       netrc.delete(host) && netrc.save if netrc
       @credentials = nil
     end
 
-    def self.read_credentials
-      netrc[full_host_uri.host] if netrc
+    def read_credentials
+      netrc ? netrc[host] : nil
     end
 
-    def self.ask_for_credentials
+    def ask_for_credentials
+      # Email
       email = ask_free_response_question('Enter your Conflux credentials.', 'Email: ')
+
+      # Password
       print 'Password (typing will be hidden): '
       password = running_on_windows? ? ask_for_password_on_windows : ask_for_password
 
-      [email, password]
+      users_api = Conflux::Api::Users.new
+
+      auth_resp = users_api.login(email, password)
+
+      if !auth_resp['user_token']
+        team_slugs = auth_resp['team_slugs']
+
+        selected_team_index = ask_mult_choice_question(
+          'Which team do you wish to login for?',
+          team_slugs
+        )
+
+        selected_team_slug = team_slugs[selected_team_index]
+
+        auth_resp = users_api.login(
+          email,
+          password,
+          team_slug: selected_team_slug
+        )
+      end
+
+      display "Logged in as #{email} of #{auth_resp['team']}"
+
+      [email, auth_resp['user_token']]
     end
 
-    def self.ask_for_password_on_windows
+    def ask_for_password_on_windows
       require 'Win32API'
       char = nil
       password = ''
@@ -92,7 +115,7 @@ module Conflux
       password
     end
 
-    def self.ask_for_password
+    def ask_for_password
       begin
         echo_off
         password = allow_user_response
@@ -104,15 +127,15 @@ module Conflux
       password
     end
 
-    def self.get_email
+    def get_email
       get_credentials[0]
     end
 
-    def self.get_password
+    def get_password
       get_credentials[1]
     end
 
-    def self.api_key(email = get_email, password = get_password)
+    def api_key(email = get_email, password = get_password)
       # get valid user token for email/password combo by making ajax post
       api_key = '1234567'
       api_key
@@ -121,19 +144,19 @@ module Conflux
       exit 1
     end
 
-    def self.echo_off
+    def echo_off
       with_tty do
         system 'stty -echo'
       end
     end
 
-    def self.echo_on
+    def echo_on
       with_tty do
         system 'stty echo'
       end
     end
 
-    def self.netrc
+    def netrc
       @netrc ||= begin
         File.exists?(netrc_path) && Netrc.read(netrc_path)
       rescue => e
@@ -148,7 +171,7 @@ module Conflux
       end
     end
 
-    def self.netrc_path
+    def netrc_path
       default = begin
         File.join(Conflux::Helpers::Env['NETRC'] || home_directory, Netrc.netrc_filename)
       rescue NoMethodError # happens if old netrc gem is installed

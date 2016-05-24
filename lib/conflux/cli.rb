@@ -10,7 +10,7 @@ module Conflux
       $stdout.sync = true if $stdout.isatty
 
       # Strip out command
-      command = args.shift.strip rescue "help"
+      command = args.shift.strip rescue 'help'
 
       require 'conflux/command'
 
@@ -19,13 +19,12 @@ module Conflux
 
       # Run command
       Conflux::Command.run(command, args)
-
     rescue Errno::EPIPE => e
-      error e.message
+      error(e.message)
     rescue Interrupt => e
-      error "Command cancelled."
+      error('Command cancelled.')
     rescue => e
-      error e
+      error(e)
     end
 
   end

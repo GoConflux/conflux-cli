@@ -103,7 +103,11 @@ module Conflux
     end
 
     def host
-      ENV['CONFLUX_HOST'] || 'conflux-dev.herokuapp.com'
+      host_url.gsub(/http:\/\/|https:\/\//, '')
+    end
+
+    def host_url
+      ENV['CONFLUX_HOST'] || 'http://api.goconflux.com'
     end
 
   end

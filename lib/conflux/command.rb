@@ -8,10 +8,11 @@ GLOBAL = 'global'
 module Conflux
   module Command
     extend Conflux::Helpers
+    extend self
 
     class CommandFailed < RuntimeError; end
 
-    def self.load
+    def load
       # Require all the ruby command files
       command_file_paths.each do |file|
         # require actual file
@@ -42,7 +43,7 @@ module Conflux
       end
     end
 
-    def self.run(cmd, args = [])
+    def run(cmd, args = [])
       respond_with_help and return if seeking_help?(cmd, args)
       respond_with_version and return if seeking_version?(cmd, args)
 
@@ -50,7 +51,7 @@ module Conflux
       command_class.send(method)
     end
 
-    def self.prep_for_run(cmd, args = [])
+    def prep_for_run(cmd, args = [])
       command = get_cmd(cmd)
       @current_command = cmd
       @anonymized_args, @normalized_args = [], []
@@ -116,55 +117,55 @@ module Conflux
       end
     end
 
-    def self.respond_with_help
+    def respond_with_help
       display 'help'
     end
 
-    def self.respond_with_version
+    def respond_with_version
       display "conflux #{Conflux::VERSION}"
     end
 
-    def self.seeking_help?(cmd, args)
+    def seeking_help?(cmd, args)
       args.length == 0 && (cmd == 'help' || cmd == '-h' || cmd.empty?)
     end
 
-    def self.seeking_version?(cmd, args)
+    def seeking_version?(cmd, args)
       args.length == 0 && (cmd == '--version' || cmd == '-v')
     end
 
-    def self.get_basename_from_file(file)
+    def get_basename_from_file(file)
       basename = Pathname.new(file).basename.to_s
       basename = basename[0..(basename.rindex('.') - 1)]
       basename
     end
 
-    def self.command_file_paths
+    def command_file_paths
       abstract_file = File.join(File.dirname(__FILE__), 'command', 'abstract_command.rb')
       Dir[File.join(File.dirname(__FILE__), 'command', '*.rb')] - [abstract_file]
     end
 
-    def self.global_options
+    def global_options
       @global_options ||= []
     end
 
-    def self.get_cmd(cmd)
+    def get_cmd(cmd)
       cmd = cmd.to_sym
       commands[cmd] || commands[command_aliases[cmd]]
     end
 
-    def self.commands
+    def commands
       @@commands ||= {}
     end
 
-    def self.register_command(cmd_info)
+    def register_command(cmd_info)
       commands[cmd_info[:method]] = cmd_info
     end
 
-    def self.command_aliases
+    def command_aliases
       @@command_aliases ||= {}
     end
 
-    def self.namespaces
+    def namespaces
       @@namespaces ||= {}
     end
 
