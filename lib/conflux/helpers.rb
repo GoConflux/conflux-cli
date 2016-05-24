@@ -72,5 +72,39 @@ module Conflux
       end
     end
 
+    def home_directory
+      if running_on_windows?
+        # This used to be File.expand_path("~"), which should have worked but there was a bug
+        # when a user has a cyrillic character in their username.  Their username gets mangled
+        # by a C code operation that does not respect multibyte characters
+        #
+        # see: https://github.com/ruby/ruby/blob/v2_2_3/win32/file.c#L47
+        home = Conflux::Helpers::Env['HOME']
+        homedrive = Conflux::Helpers::Env['HOMEDRIVE']
+        homepath = Conflux::Helpers::Env['HOMEPATH']
+        userprofile = Conflux::Helpers::Env['USERPROFILE']
+
+        home_dir = if home
+                     home
+                   elsif homedrive && homepath
+                     homedrive + homepath
+                   elsif userprofile
+                     userprofile
+                   else
+                     # The expanding `~' error here does not make much sense
+                     # just made it match File.expand_path when no env set
+                     raise ArgumentError.new("couldn't find HOME environment -- expanding `~'")
+                   end
+
+        home_dir.gsub(/\\/, '/')
+      else
+        Dir.home
+      end
+    end
+
+    def host
+      ENV['CONFLUX_HOST'] || 'conflux-dev.herokuapp.com'
+    end
+
   end
 end
