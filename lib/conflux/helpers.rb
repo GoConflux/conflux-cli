@@ -120,34 +120,26 @@ module Conflux
       File.exists?(File.join(Dir.pwd, 'package.json'))
     end
 
-    def conflux_gem_install
+    def install_conflux_gem
       # Only proceed if gem isn't installed yet
-      if !system('gem which conflux-rb')
+      if !system('gem which conflux')
 
-        display('Installing conflux-rb ruby gem...')
+        display('Installing conflux ruby gem...')
 
         # returns array of [stdout, stderr, status]
-        normal_install = Open3.capture3('gem install pry')
+        normal_install = Open3.capture3('gem install conflux')
         errors = normal_install[1]
 
         # If error exist
         if !errors.empty?
           if errors.match(/Gem::FilePermissionError/)
             display('Got permission error...trying again with sudo.')
-            system('sudo gem install pry')
+            system('sudo gem install conflux')
           else
             puts errors
           end
         end
       end
-    end
-
-    def conflux_gem
-      'conflux-rb'
-    end
-
-    def conflux_module
-      'conflux-js'
     end
 
   end

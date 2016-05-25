@@ -30,7 +30,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
     if File.exists?(conflux_manifest_path)
       manifest_json = JSON.parse(File.read(conflux_manifest_path)) rescue {}
-      display("Connection already established for this directory with the Conflux app: #{manifest_json['name']}")
+      display("Directory already connected to Conflux app: #{manifest_json['name']}")
     else
       apps_api = Conflux::Api::Apps.new
 
@@ -63,8 +63,8 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
           File.open(gemfile, 'a') { |f|  f.puts "\n\ngem 'conflux-rb'" }
         end
 
-        # Run `gem install conflux-rb` if gem not already installed
-        conflux_gem_install
+        # Run `gem install conflux` if gem not already installed
+        install_conflux_gem
 
       elsif is_node_project?
         # write to package.json the conflux-js node_module
