@@ -1,3 +1,5 @@
+require 'open3'
+
 module Conflux
   module Helpers
     extend self
@@ -116,6 +118,28 @@ module Conflux
 
     def is_node_project?
       File.exists?(File.join(Dir.pwd, 'package.json'))
+    end
+
+    def conflux_gem_install
+      # Only proceed if gem isn't installed yet
+      if !system('gem which conflux-rb')
+
+        display('Installing conflux-rb ruby gem...')
+
+        # returns array of [stdout, stderr, status]
+        normal_install = Open3.capture3('gem install pry')
+        errors = normal_install[1]
+
+        # If error exist
+        if !errors.empty?
+          if errors.match(/Gem::FilePermissionError/)
+            display('Got permission error...trying again with sudo.')
+            system('sudo gem install pry')
+          else
+            puts errors
+          end
+        end
+      end
     end
 
     def conflux_gem

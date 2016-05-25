@@ -7,11 +7,15 @@ class Conflux::Api::Apps < Conflux::Api::AbstractApi
   end
 
   def list
-    get(extension)
+    # get(extension)
+    ['pulse-360-local', 'pulse-360-staging']
   end
 
   def manifest(app_slug)
-    get("#{extension}/manifest", data: { app_slug: app_slug })
+    # get("#{extension}/manifest", data: { app_slug: app_slug })
+    {
+      'something' => 'mymanifest'
+    }
   end
 
 end

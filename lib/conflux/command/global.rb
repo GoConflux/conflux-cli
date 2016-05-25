@@ -2,6 +2,7 @@ require 'conflux/command/abstract_command'
 require_relative '../auth'
 require_relative '../api/apps'
 require 'json'
+require 'pry'
 
 class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
@@ -14,12 +15,16 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     conflux_folder_path = "#{Dir.pwd}/.conflux/"
     conflux_manifest_path = File.join(conflux_folder_path, 'manifest.json')
 
-    # Create .conflux/ folder and add it to .gitignore if it doesn't exist yet
+    # Create .conflux/ folder if it doesn't exist
     if !File.exists?(conflux_folder_path)
       Dir.mkdir(conflux_folder_path)
 
-      File.open(File.join(Dir.pwd, '.gitignore'), 'a') do |f|
-        f.puts "\n/.conflux/\n"
+      gitignore = File.join(Dir.pwd, '.gitignore')
+      gi_entries = File.read(gitignore).split("\n")
+
+      # Add /.conflux/ to .gitignore if not already
+      if !gi_entries.include?('.conflux/') && !gi_entries.include?('/.conflux/')
+        File.open(gitignore, 'a') { |f| f.puts "\n/.conflux/\n" }
       end
     end
 
@@ -51,9 +56,18 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
       # Determine which conflux gem/client to install based on type of project
       if is_rails_project?
-        # Upsert Gemfile with conflux_gem and run system gem install conflux_gem
+        gemfile = File.join(Dir.pwd, 'Gemfile')
+
+        # Write gem 'conflux-rb' to Gemfile if not there already
+        if File.read(gemfile).match(/'conflux-rb'|"conflux-rb"/).nil?
+          File.open(gemfile, 'a') { |f|  f.puts "\n\ngem 'conflux-rb'" }
+        end
+
+        # Run `gem install conflux-rb` if gem not already installed
+        conflux_gem_install
+
       elsif is_node_project?
-        # Upsert package.json with conflux_module and run system npm install conflux_module
+        # write to package.json the conflux-js node_module
       end
     end
 
