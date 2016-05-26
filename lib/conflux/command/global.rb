@@ -1,6 +1,7 @@
 require 'conflux/command/abstract_command'
 require_relative '../auth'
 require_relative '../api/apps'
+require 'fileutils'
 require 'json'
 require 'pry'
 
@@ -10,23 +11,14 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     Conflux::Auth.login
   end
 
+  def logout
+    Conflux::Auth.logout
+  end
+
   # Establish connection between pwd and a chosen conflux app
   def init
     conflux_folder_path = "#{Dir.pwd}/.conflux/"
     conflux_manifest_path = File.join(conflux_folder_path, 'manifest.json')
-
-    # Create .conflux/ folder if it doesn't exist
-    if !File.exists?(conflux_folder_path)
-      Dir.mkdir(conflux_folder_path)
-
-      gitignore = File.join(Dir.pwd, '.gitignore')
-      gi_entries = File.read(gitignore).split("\n")
-
-      # Add /.conflux/ to .gitignore if not already
-      if !gi_entries.include?('.conflux/') && !gi_entries.include?('/.conflux/')
-        File.open(gitignore, 'a') { |f| f.puts "\n/.conflux/\n" }
-      end
-    end
 
     if File.exists?(conflux_manifest_path)
       manifest_json = JSON.parse(File.read(conflux_manifest_path)) rescue {}
@@ -47,30 +39,45 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       # Fetch manifest info for that selected app
       manifest_json = apps_api.manifest(selected_app_slug)
 
+      # Create /.conflux/ folder if doesn't already exist
+      FileUtils.mkdir_p(conflux_folder_path) if !File.exists?(conflux_folder_path)
+
       # Write this app info to a new manifest.json file for the user
       File.open(conflux_manifest_path, 'w+') do |f|
         f.write(JSON.pretty_generate(manifest_json))
       end
 
-      display("Successfully connected project to Conflux app: #{manifest_json['name']}")
-
       # Determine which conflux gem/client to install based on type of project
       if is_rails_project?
         gemfile = File.join(Dir.pwd, 'Gemfile')
 
-        # Write gem 'conflux-rb' to Gemfile if not there already
-        if File.read(gemfile).match(/'conflux-rb'|"conflux-rb"/).nil?
-          File.open(gemfile, 'a') { |f|  f.puts "\n\ngem 'conflux-rb'" }
+        # Write gem 'conflux to Gemfile if not there already
+        if File.read(gemfile).match(/'conflux'|"conflux"/).nil?
+          display('Adding conflux to Gemfile...')
+          File.open(gemfile, 'a') { |f|  f.puts "\n\ngem 'conflux'" }
         end
 
         # Run `gem install conflux` if gem not already installed
-        install_conflux_gem
+        install_conflux_gem if !gem_exists?
 
       elsif is_node_project?
         # write to package.json the conflux-js node_module
       end
+
+      display("Successfully connected project to Conflux app: #{manifest_json['name']}")
     end
 
+    # Add /.conflux/ to .gitignore if not already
+    gitignore = File.join(Dir.pwd, '.gitignore')
+    gi_entries = File.read(gitignore).split("\n")
+
+    if !gi_entries.include?('.conflux/') && !gi_entries.include?('/.conflux/')
+      File.open(gitignore, 'a') { |f| f.puts "\n/.conflux/\n" }
+    end
+  end
+
+  def status
+    display "I'm doing just fine, thank you."
   end
 
 end

@@ -121,24 +121,30 @@ module Conflux
     end
 
     def install_conflux_gem
-      # Only proceed if gem isn't installed yet
-      if !system('gem which conflux')
+      display('Installing conflux ruby gem...')
 
-        display('Installing conflux ruby gem...')
+      # returns array of [stdout, stderr, status]
+      normal_install = Open3.capture3('gem install conflux')
+      errors = normal_install[1]
 
-        # returns array of [stdout, stderr, status]
-        normal_install = Open3.capture3('gem install conflux')
-        errors = normal_install[1]
-
-        # If error exist
-        if !errors.empty?
-          if errors.match(/Gem::FilePermissionError/)
-            display('Got permission error...trying again with sudo.')
-            system('sudo gem install conflux')
-          else
-            puts errors
-          end
+      # If error exist
+      if !errors.empty?
+        if errors.match(/Gem::FilePermissionError/)
+          display('Got permission error...trying again with sudo.')
+          system('sudo gem install conflux')
+        else
+          puts errors
         end
+      end
+    end
+
+    def gem_exists?
+      capture = Open3.capture3('gem which conflux')
+
+      begin
+        !capture[0].empty? && capture[1].empty? && capture[2].exitstatus == 0
+      rescue
+        false
       end
     end
 

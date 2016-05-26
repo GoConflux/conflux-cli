@@ -16,6 +16,7 @@ module Conflux
 
     def logout
       delete_credentials
+      display 'Successfully logged out of Conflux.'
     end
 
     def get_credentials
