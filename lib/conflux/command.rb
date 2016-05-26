@@ -3,7 +3,7 @@ require 'conflux/version'
 require 'optparse'
 require 'pathname'
 
-GLOBAL = 'global'
+GLOBAL_COMMAND_FILE = 'global'
 
 module Conflux
   module Command
@@ -21,24 +21,28 @@ module Conflux
         # Get basename for the file -- w/out extension
         basename = get_basename_from_file(file)
 
-        # If this is the global command file
-        if basename === GLOBAL
-          # Camcelcase the basename to be the module name
-          module_name = camelize(basename)
+        # Camcelcase the basename to be the module name
+        module_name = camelize(basename)
 
-          # Store reference to the class associated with this basename
-          command_class = Conflux::Command.const_get(module_name)
+        # Store reference to the class associated with this basename
+        command_class = Conflux::Command.const_get(module_name)
 
-          # iterate over each of the user-defined mtehods in the class and
-          # add them to the @@commands map
-          command_class.instance_methods(false).each { |method|
-            register_command({
-              method: method,
-              klass: command_class
-            })
+        # If this is global.rb
+        if basename === GLOBAL_COMMAND_FILE
+          # Iterate over each of the user-defined mtehods and add them as commands
+          manually_added_methods(command_class).each { |method|
+            register_command({method: method.to_s, klass: command_class})
           }
-        else
 
+        # Otherwise, use a namespaced approach by file name
+        else
+          # For each of these, the `index` method will be invoked if the namespace isn't used.
+          # For example, if this was a my_commmand.rb file, the my_command#index
+          # method would be invoked by simply calling `$ conflux my_command`
+          manually_added_methods(command_class).each { |method|
+            command = (method == :index) ? method.to_s : "#{basename}:#{method}"
+            register_command({method: command, klass: command_class})
+          }
         end
       end
     end
@@ -149,7 +153,6 @@ module Conflux
     end
 
     def get_cmd(cmd)
-      cmd = cmd.to_sym
       commands[cmd] || commands[command_aliases[cmd]]
     end
 

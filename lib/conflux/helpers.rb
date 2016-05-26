@@ -148,5 +148,9 @@ module Conflux
       end
     end
 
+    def manually_added_methods(klass)
+      klass.instance_methods(false)
+    end
+
   end
 end
