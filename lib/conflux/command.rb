@@ -2,6 +2,7 @@ require 'conflux/helpers'
 require 'conflux/version'
 require 'optparse'
 require 'pathname'
+require 'pry'
 
 GLOBAL_COMMAND_FILE = 'global'
 
@@ -31,7 +32,7 @@ module Conflux
         if basename === GLOBAL_COMMAND_FILE
           # Iterate over each of the user-defined mtehods and add them as commands
           manually_added_methods(command_class).each { |method|
-            register_command({method: method.to_s, klass: command_class})
+            register_command(method.to_s, { method: method.to_s, klass: command_class })
           }
 
         # Otherwise, use a namespaced approach by file name
@@ -40,8 +41,8 @@ module Conflux
           # For example, if this was a my_commmand.rb file, the my_command#index
           # method would be invoked by simply calling `$ conflux my_command`
           manually_added_methods(command_class).each { |method|
-            command = (method == :index) ? method.to_s : "#{basename}:#{method}"
-            register_command({method: command, klass: command_class})
+            command = (method == :index) ? basename : "#{basename}:#{method}"
+            register_command(command, { method: method.to_s, klass: command_class })
           }
         end
       end
@@ -160,8 +161,8 @@ module Conflux
       @@commands ||= {}
     end
 
-    def register_command(cmd_info)
-      commands[cmd_info[:method]] = cmd_info
+    def register_command(command, cmd_info_hash)
+      commands[command] = cmd_info_hash
     end
 
     def command_aliases
