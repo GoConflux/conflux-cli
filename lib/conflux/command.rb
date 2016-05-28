@@ -2,7 +2,6 @@ require 'conflux/helpers'
 require 'conflux/version'
 require 'optparse'
 require 'pathname'
-require 'pry'
 
 GLOBAL_COMMAND_FILE = 'global'
 
@@ -109,7 +108,33 @@ module Conflux
     end
 
     def respond_with_help
-      display 'help'
+      header = [
+        'Usage: conflux COMMAND [command-specific-options]',
+        'Type "conflux COMMAND --help" for more details about each command',
+        'Commands:'
+      ].join("\n\n")
+
+      command_keys = commands.keys
+
+      commands_column_width = command_keys.max_by(&:length).length + 1
+
+      commands_column_width = 12 if commands_column_width < 12
+
+      # iterate through each of the commands, create an array
+      # of strings in a `<command>  #  <description>` format. Sort
+      # them alphabetically, and then join them with new lines.
+      commands_info = command_keys.map { |key|
+        command = "  #{key}"
+
+        for i in 0..(commands_column_width - key.length)
+          command += ' '
+        end
+
+        command += "#  #{commands[key][:description]}"
+      }.sort_by{ |k| k.downcase }.join("\n")
+
+      puts "\n#{header}"
+      display "\n#{commands_info}\n\n"
     end
 
     def respond_with_version
