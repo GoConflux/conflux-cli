@@ -16,35 +16,21 @@ module Conflux
     def load
       # Require all the ruby command files
       command_file_paths.each do |file|
-        # require actual file
         require file
 
-        # Get basename for the file -- w/out extension
+        # Get basename for the file without the extension (Ex: global, app, etc.)
         basename = get_basename_from_file(file)
 
-        # Camcelcase the basename to be the module name
-        module_name = camelize(basename)
+        # Camelcase the basename to be the class name
+        class_name = camelize(basename)
 
         # Store reference to the class associated with this basename
-        command_class = Conflux::Command.const_get(module_name)
+        command_class = Conflux::Command.const_get(class_name)
 
-        # If this is global.rb
-        if basename === GLOBAL_COMMAND_FILE
-          # Iterate over each of the user-defined mtehods and add them as commands
-          manually_added_methods(command_class).each { |method|
-            register_command(method.to_s, { method: method.to_s, klass: command_class })
-          }
-
-        # Otherwise, use a namespaced approach by file name
-        else
-          # For each of these, the `index` method will be invoked if the namespace isn't used.
-          # For example, if this was a my_commmand.rb file, the my_command#index
-          # method would be invoked by simply calling `$ conflux my_command`
-          manually_added_methods(command_class).each { |method|
-            command = (method == :index) ? basename : "#{basename}:#{method}"
-            register_command(command, { method: method.to_s, klass: command_class })
-          }
-        end
+        # For each of the user-defined methods inside this class, create a command for it
+        manually_added_methods(command_class).each { |method|
+          register_command(basename, method.to_s, command_class, global: (basename == GLOBAL_COMMAND_FILE))
+        }
       end
     end
 
@@ -161,8 +147,21 @@ module Conflux
       @@commands ||= {}
     end
 
-    def register_command(command, cmd_info_hash)
-      commands[command] = cmd_info_hash
+    def register_command(basename, action, command_class, global: false)
+      if global
+        command = action
+      else
+        command = (action == 'index') ? basename : "#{basename}:#{action}"
+      end
+
+      command_info_module = command_class::CommandInfo.const_get(camelize(action))
+
+      commands[command] = {
+        method: action,
+        klass: command_class,
+        args: command_info_module::VALID_ARGS,
+        description: command_info_module::DESCRIPTION
+      }
     end
 
     def command_aliases
