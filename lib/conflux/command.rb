@@ -2,6 +2,7 @@ require 'conflux/helpers'
 require 'conflux/version'
 require 'optparse'
 require 'pathname'
+require 'pry'
 
 GLOBAL_COMMAND_FILE = 'global'
 
@@ -34,71 +35,34 @@ module Conflux
     end
 
     def run(cmd, args = [])
-      respond_with_help and return if seeking_help?(cmd, args)
-      respond_with_version and return if seeking_version?(cmd, args)
-
-      command_class, method = prep_for_run(cmd, args.dup)
-      command_class.send(method)
-    end
-
-    def prep_for_run(cmd, args = [])
       command = get_cmd(cmd)
-      @current_command = cmd
-      @anonymized_args, @normalized_args = [], []
 
-      opts = {}
-      invalid_options = []
-
-      option_parser = OptionParser.new do |parser|
-        # remove OptionParsers Officious['version'] to avoid conflicts
-        parser.base.long.delete('version')
-
-        (global_options + (command && command[:options] || [])).each do |option|
-          parser.on(*option[:args]) do |value|
-            option[:proc].call(value) if option[:proc]
-
-            opts[option[:name].gsub('-', '_').to_sym] = value
-
-            ARGV.join(' ') =~ /(#{option[:args].map {|arg| arg.split(' ', 2).first}.join('|')})/
-
-            @anonymized_args << "#{$1} _"
-
-            @normalized_args << "#{option[:args].last.split(' ', 2).first} _"
-          end
-        end
-      end
-
-      begin
-        option_parser.order!(args) do |nonopt|
-          invalid_options << nonopt
-          @anonymized_args << '!'
-          @normalized_args << '!'
-        end
-      rescue OptionParser::InvalidOption => ex
-        invalid_options << ex.args.first
-        @anonymized_args << '!'
-        @normalized_args << '!'
-        retry
-      end
-
-      args.concat(invalid_options)
-
-      @current_args = args
-      @current_options = opts
-      @invalid_arguments = invalid_options
-
-      @anonymous_command = [ARGV.first, *@anonymized_args].join(' ')
-
+      # if command is in the @@commands map
       if command
-        command_instance = command[:klass].new(args.dup, opts.dup)
 
-        if !@normalized_args.include?('--app _') && (command_instance.app rescue nil)
-          @normalized_args << '--app _'
+        if seeking_command_help?(args)
+          respond_with_command_help(cmd)
+          return
         end
 
-        @normalized_command = [ARGV.first, @normalized_args.sort_by {|arg| arg.gsub('-', '')}].join(' ')
+        # check for any invalid arguments passed in
+        invalid_args = args - command[:args].keys
 
-        [command_instance, command[:method]]
+        # if invalid args exist, show the user how to properly use the command
+        if !invalid_args.empty?
+          handle_invalid_args(cmd, command, invalid_args)
+          return
+        end
+
+        command_instance = command[:klass].new(args.dup)
+        command_instance.send(command[:method])
+
+      elsif seeking_version?(cmd, args)
+        respond_with_version
+
+      elsif seeking_help?(cmd, args)
+        respond_with_help
+
       else
         error([
           "`#{cmd}` is not a conflux command.",
@@ -107,46 +71,87 @@ module Conflux
       end
     end
 
-    def respond_with_help
-      header = [
-        'Usage: conflux COMMAND [command-specific-options]',
-        'Type "conflux COMMAND --help" for more details about each command',
-        'Commands:'
-      ].join("\n\n")
+    def handle_invalid_args(cmd, command, invalid_args)
+      message = 'Invalid argument'
+      message += 's' if invalid_args.length > 1
+      invalid_args = invalid_args.map { |arg| "\"#{arg}\"" }.join(', ')
 
-      command_keys = commands.keys
+      # Explain to the user which arguments were invalid
+      puts " !    #{message}: #{invalid_args}"
 
-      commands_column_width = command_keys.max_by(&:length).length + 1
+      # Explain which arguments ARE valid
+      puts "\nValid arguments for \"conflux #{cmd}\":\n"
 
-      commands_column_width = 12 if commands_column_width < 12
+      valid_args = command[:args]
 
-      # iterate through each of the commands, create an array
-      # of strings in a `<command>  #  <description>` format. Sort
-      # them alphabetically, and then join them with new lines.
-      commands_info = command_keys.map { |key|
-        command = "  #{key}"
+      command_info = usage_info(valid_args.keys, valid_args)
 
-        for i in 0..(commands_column_width - key.length)
-          command += ' '
-        end
-
-        command += "#  #{commands[key][:description]}"
-      }.sort_by{ |k| k.downcase }.join("\n")
-
-      puts "\n#{header}"
-      display "\n#{commands_info}\n\n"
-    end
-
-    def respond_with_version
-      display "conflux #{Conflux::VERSION}"
+      puts "\n#{command_info}\n\n"
     end
 
     def seeking_help?(cmd, args)
       args.length == 0 && (cmd == 'help' || cmd == '-h' || cmd.empty?)
     end
 
+    def respond_with_help
+      header = [
+        'Usage: conflux COMMAND [command-specific-arguments]',
+        'Type "conflux COMMAND --help" for more details about each command',
+        'Commands:'
+      ].join("\n\n")
+
+      commands_info = usage_info(commands.keys, commands)
+
+      puts "\n#{header}"
+      puts "\n#{commands_info}\n\n"
+    end
+
+    def seeking_command_help?(args)
+      args.include?('-h') || args.include?('--help')
+    end
+
+    # Command-specific help
+    def respond_with_command_help(cmd)
+      command = get_cmd(cmd)
+
+      header = [
+        "Usage: conflux #{cmd}  #  #{command[:description]}",
+        "Valid arguments:"
+      ].join("\n\n")
+
+      valid_args = command[:args]
+
+      command_info = usage_info(valid_args.keys, valid_args)
+
+      puts "\n#{header}"
+      puts "\n#{command_info}\n\n"
+    end
+
     def seeking_version?(cmd, args)
       args.length == 0 && (cmd == '--version' || cmd == '-v')
+    end
+
+    def respond_with_version
+      display "conflux #{Conflux::VERSION}"
+    end
+
+    def usage_info(keys, map)
+      commands_column_width = keys.max_by(&:length).length + 1
+
+      commands_column_width += 2 if commands_column_width < 12
+
+      # iterate through each of the commands, create an array
+      # of strings in a `<command>  #  <description>` format. Sort
+      # them alphabetically, and then join them with new lines.
+      keys.map { |key|
+        command = "  #{key}"
+
+        for i in 0..(commands_column_width - key.length)
+          command += ' '
+        end
+
+        command += "#  #{map[key][:description]}"
+      }.sort_by{ |k| k.downcase }.join("\n")
     end
 
     def get_basename_from_file(file)
@@ -160,12 +165,8 @@ module Conflux
       Dir[File.join(File.dirname(__FILE__), 'command', '*.rb')] - [abstract_file]
     end
 
-    def global_options
-      @global_options ||= []
-    end
-
     def get_cmd(cmd)
-      commands[cmd] || commands[command_aliases[cmd]]
+      commands[cmd]
     end
 
     def commands
@@ -184,17 +185,10 @@ module Conflux
       commands[command] = {
         method: action,
         klass: command_class,
+        basename: basename,
         args: command_info_module::VALID_ARGS,
         description: command_info_module::DESCRIPTION
       }
-    end
-
-    def command_aliases
-      @@command_aliases ||= {}
-    end
-
-    def namespaces
-      @@namespaces ||= {}
     end
 
   end

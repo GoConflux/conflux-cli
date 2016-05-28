@@ -87,16 +87,16 @@ module Conflux
         userprofile = Conflux::Helpers::Env['USERPROFILE']
 
         home_dir = if home
-                     home
-                   elsif homedrive && homepath
-                     homedrive + homepath
-                   elsif userprofile
-                     userprofile
-                   else
-                     # The expanding `~' error here does not make much sense
-                     # just made it match File.expand_path when no env set
-                     raise ArgumentError.new("couldn't find HOME environment -- expanding `~'")
-                   end
+            home
+          elsif homedrive && homepath
+            homedrive + homepath
+          elsif userprofile
+            userprofile
+          else
+            # The expanding `~' error here does not make much sense
+            # just made it match File.expand_path when no env set
+            raise ArgumentError.new("couldn't find HOME environment -- expanding `~'")
+          end
 
         home_dir.gsub(/\\/, '/')
       else

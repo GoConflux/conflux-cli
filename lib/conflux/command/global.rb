@@ -76,10 +76,6 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     end
   end
 
-  def status
-    display "I'm doing just fine, thank you."
-  end
-
 
   #----------------------------------------------------------------------------
 
@@ -87,22 +83,17 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
     module Login
       DESCRIPTION = 'Login to a conflux team'
-      VALID_ARGS = []
+      VALID_ARGS = {}
     end
 
     module Logout
       DESCRIPTION = 'Log out of current conflux team'
-      VALID_ARGS = []
+      VALID_ARGS = {}
     end
 
     module Init
       DESCRIPTION = 'Connect current directory to one of your conflux apps'
-      VALID_ARGS = []
-    end
-
-    module Status
-      DESCRIPTION = 'Get status of conflux app connected to current directory'
-      VALID_ARGS = []
+      VALID_ARGS = {}
     end
 
   end

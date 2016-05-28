@@ -2,11 +2,6 @@ require 'conflux/command/abstract_command'
 
 class Conflux::Command::App < Conflux::Command::AbstractCommand
 
-  module Descriptions
-    INDEX = 'My Index Description'
-    CHANGE = 'My Index Description'
-  end
-
   def index
     display 'HEARD APP INDEX'
   end
@@ -15,19 +10,25 @@ class Conflux::Command::App < Conflux::Command::AbstractCommand
     display 'HEARD APP CHANGE'
   end
 
-
   #----------------------------------------------------------------------------
 
   module CommandInfo
 
     module Index
       DESCRIPTION = 'Shows conflux app info for current directory'
-      VALID_ARGS = []
+      VALID_ARGS = {
+        '-t' => {
+          description: 'My T description'
+        },
+        '-p' => {
+          description: 'My P description'
+        }
+      }
     end
 
     module Change
       DESCRIPTION = 'Change conflux apps for current directory'
-      VALID_ARGS = []
+      VALID_ARGS = {}
     end
 
   end
