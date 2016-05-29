@@ -29,7 +29,6 @@ module Conflux
 
         write_credentials
 
-        # check user is authed with auth_test ajax call
         @credentials
       rescue => e
         delete_credentials
@@ -69,32 +68,14 @@ module Conflux
 
       # Password
       print 'Password (typing will be hidden): '
+
       password = running_on_windows? ? ask_for_password_on_windows : ask_for_password
 
-      users_api = Conflux::Api::Users.new
+      user_token = Conflux::Api::Users.new.login(email, password)
 
-      auth_resp = users_api.login(email, password)
+      display "Successfully logged in as #{email}"
 
-      if !auth_resp['user_token']
-        team_slugs = auth_resp['team_slugs']
-
-        selected_team_index = ask_mult_choice_question(
-          'Which team do you wish to login for?',
-          team_slugs
-        )
-
-        selected_team_slug = team_slugs[selected_team_index]
-
-        auth_resp = users_api.login(
-          email,
-          password,
-          team_slug: selected_team_slug
-        )
-      end
-
-      display "Logged in as #{email} of #{auth_resp['team']}"
-
-      [email, auth_resp['user_token']]
+      [email, user_token]
     end
 
     def ask_for_password_on_windows

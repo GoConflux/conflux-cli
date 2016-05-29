@@ -2,7 +2,6 @@ require 'conflux/helpers'
 require 'conflux/version'
 require 'optparse'
 require 'pathname'
-require 'pry'
 
 GLOBAL_COMMAND_FILE = 'global'
 

@@ -3,7 +3,6 @@ require_relative '../auth'
 require_relative '../api/apps'
 require 'fileutils'
 require 'json'
-require 'pry'
 
 class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
