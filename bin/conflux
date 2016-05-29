@@ -4,7 +4,7 @@
 require "pathname"
 bin_file = Pathname.new(__FILE__).realpath
 
-lib_path = (bin_file == '/usr/local/bin/conflux') ?
+lib_path = (bin_file.to_s == '/usr/local/bin/conflux') ?
   File.expand_path("../../conflux/lib", bin_file) :
   File.expand_path("../../lib", bin_file)
 
