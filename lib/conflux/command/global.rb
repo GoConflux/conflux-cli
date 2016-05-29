@@ -68,6 +68,24 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     end
   end
 
+  def open
+    if File.exists?(conflux_manifest_path)
+      manifest_json = JSON.parse(File.read(conflux_manifest_path)) rescue {}
+      app_url = manifest_json['app']['url']
+
+      if !app_url.nil?
+        display "Opening conflux app..."
+        with_tty do
+          system "open #{app_url}"
+        end
+      else
+        display "Could not find valid app url inside your conflux manifest.json"
+      end
+    else
+      display "Directory not currently connected to a conflux app.\n"\
+        "Run \"conflux init\" to a establish a connection with one of your apps."
+    end
+  end
 
   #----------------------------------------------------------------------------
 
@@ -85,6 +103,11 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
     module Init
       DESCRIPTION = 'Connect current directory to one of your conflux apps'
+      VALID_ARGS = {}
+    end
+
+    module Open
+      DESCRIPTION = 'Open Web UI for current conflux app'
       VALID_ARGS = {}
     end
 
