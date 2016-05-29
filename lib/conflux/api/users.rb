@@ -2,9 +2,13 @@ require 'conflux/api/abstract_api'
 
 class Conflux::Api::Users < Conflux::Api::AbstractApi
 
+  def extension
+    '/users'
+  end
+
   def login(email, password)
     resp = post(
-      '/users/login',
+      "#{extension}/login",
       data: {
         email: email,
         password: password
@@ -14,6 +18,10 @@ class Conflux::Api::Users < Conflux::Api::AbstractApi
     )
 
     resp['user_token']
+  end
+
+  def apps
+    get("#{extension}/apps")
   end
 
 end

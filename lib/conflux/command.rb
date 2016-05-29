@@ -113,17 +113,16 @@ module Conflux
     def respond_with_command_help(cmd)
       command = get_cmd(cmd)
 
-      header = [
-        "Usage: conflux #{cmd}  #  #{command[:description]}",
-        "Valid arguments:"
-      ].join("\n\n")
+      puts "\nUsage: conflux #{cmd}  #  #{command[:description]}\n\n"
 
       valid_args = command[:args]
 
-      command_info = usage_info(valid_args.keys, valid_args)
+      if !valid_args.empty?
+        command_info = usage_info(valid_args.keys, valid_args)
 
-      puts "\n#{header}"
-      puts "\n#{command_info}\n\n"
+        puts "Valid arguments:\n"
+        puts "\n#{command_info}\n\n"
+      end
     end
 
     def seeking_version?(cmd, args)

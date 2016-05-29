@@ -3,6 +3,7 @@ require_relative '../auth'
 require_relative '../api/apps'
 require 'fileutils'
 require 'json'
+require 'pry'
 
 class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
@@ -21,22 +22,18 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
     if File.exists?(conflux_manifest_path)
       manifest_json = JSON.parse(File.read(conflux_manifest_path)) rescue {}
-      display("Directory already connected to Conflux app: #{manifest_json['name']}")
+      display("Directory already connected to Conflux app: #{manifest_json['app']['name']}")
     else
-      apps_api = Conflux::Api::Apps.new
-
-      # Get list of all user's app slugs
-      app_slugs = apps_api.list
+      # Get map of all user's apps grouped by team
+      apps_map = Conflux::Api::Users.new.apps
 
       # Ask user which app this project belongs to:
-      selected_app_index = ask_mult_choice_question('Which Conflux app does this project belong to?', app_slugs)
-
-      selected_app_slug = app_slugs[selected_app_index]
+      selected_app_slug = prompt_user_to_select_app(apps_map)
 
       display 'Configuring manifest.json...'
 
       # Fetch manifest info for that selected app
-      manifest_json = apps_api.manifest(selected_app_slug)
+      manifest_json = Conflux::Api::Apps.new.manifest(selected_app_slug)
 
       # Create /.conflux/ folder if doesn't already exist
       FileUtils.mkdir_p(conflux_folder_path) if !File.exists?(conflux_folder_path)
@@ -63,7 +60,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
         # write to package.json the conflux-js node_module
       end
 
-      display("Successfully connected project to Conflux app: #{manifest_json['name']}")
+      display("Successfully connected project to Conflux app: #{manifest_json['app']['name']}")
     end
 
     # Add /.conflux/ to .gitignore if not already

@@ -27,6 +27,46 @@ module Conflux
       str.split('_').collect(&:capitalize).join
     end
 
+    def prompt_user_to_select_app(apps_map)
+      answer = nil
+      question = "\nWhich Conflux app does this project belong to?\n"
+
+      until !answer.nil?
+        count = 0
+        app_slugs = []
+
+        puts question
+
+        apps_map.each { |team, apps|
+          puts "\n#{team}:\n\n"
+
+          apps.each { |slug|
+            count += 1
+            puts "(#{count}) #{slug}"
+            app_slugs << slug
+          }
+        }
+
+        puts "\n"
+
+        response = allow_user_response
+
+        if app_slugs.include?(response)
+          answer = response
+        else
+          response_int = response.to_i rescue 0
+
+          if response_int > 0
+            answer = app_slugs[response_int - 1]
+          end
+        end
+
+        question = "\nSorry I didn't catch that. Can you respond with the number that appears next to your answer?"
+      end
+
+      answer
+    end
+
     def ask_free_response_question(question, answer_prefix = '')
       puts question
       print answer_prefix

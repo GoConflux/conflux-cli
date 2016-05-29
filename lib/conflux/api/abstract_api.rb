@@ -52,12 +52,10 @@ class Conflux::Api::AbstractApi
   end
 
   def auth_header
-    @password ? { 'Conflux-API-Token' => @password } : {}
+    @password ? { 'Conflux-User' => @password } : {}
   end
 
   def url(route)
-    ENV['CONFLUX_HOST'] = 'http://localhost:5000'
-
     "#{host_url}#{route}"
   end
 
