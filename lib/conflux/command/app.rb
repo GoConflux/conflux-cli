@@ -3,11 +3,11 @@ require 'conflux/command/abstract_command'
 class Conflux::Command::App < Conflux::Command::AbstractCommand
 
   def index
-    display 'HEARD APP INDEX'
+    # read straight from manifest.json and if not there tell user to run conflux init command to create connection
   end
 
-  def change
-    display 'HEARD APP CHANGE'
+  def switch
+
   end
 
   #----------------------------------------------------------------------------
@@ -26,9 +26,8 @@ class Conflux::Command::App < Conflux::Command::AbstractCommand
       }
     end
 
-    module Change
+    module Switch
       DESCRIPTION = 'Change conflux apps for current directory'
-      VALID_ARGS = {}
     end
 
   end

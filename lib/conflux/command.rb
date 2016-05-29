@@ -44,13 +44,15 @@ module Conflux
           return
         end
 
-        # check for any invalid arguments passed in
-        invalid_args = args - command[:args].keys
+        if !command[:args].nil?
+          # check for any invalid arguments passed in
+          invalid_args = args - command[:args].keys
 
-        # if invalid args exist, show the user how to properly use the command
-        if !invalid_args.empty?
-          handle_invalid_args(cmd, command, invalid_args)
-          return
+          # if invalid args exist, show the user how to properly use the command
+          if !invalid_args.empty?
+            handle_invalid_args(cmd, command, invalid_args)
+            return
+          end
         end
 
         command_instance = command[:klass].new(args.dup)
@@ -115,7 +117,7 @@ module Conflux
 
       puts "\nUsage: conflux #{cmd}  #  #{command[:description]}\n\n"
 
-      valid_args = command[:args]
+      valid_args = command[:args] || {}
 
       if !valid_args.empty?
         command_info = usage_info(valid_args.keys, valid_args)
@@ -180,12 +182,15 @@ module Conflux
 
       command_info_module = command_class::CommandInfo.const_get(camelize(action))
 
+      valid_args = command_info_module.const_defined?('VALID_ARGS') ? command_info_module::VALID_ARGS : nil
+      description = command_info_module.const_defined?('DESCRIPTION') ? command_info_module::DESCRIPTION : nil
+
       commands[command] = {
         method: action,
         klass: command_class,
         basename: basename,
-        args: command_info_module::VALID_ARGS,
-        description: command_info_module::DESCRIPTION
+        args: valid_args,
+        description: description
       }
     end
 
