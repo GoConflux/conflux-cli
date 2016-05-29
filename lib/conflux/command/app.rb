@@ -3,7 +3,23 @@ require 'conflux/command/abstract_command'
 class Conflux::Command::App < Conflux::Command::AbstractCommand
 
   def index
-    # read straight from manifest.json and if not there tell user to run conflux init command to create connection
+    tell_user_to_run_init = lambda {
+      display "Directory not currently connected to a conflux app.\n"\
+        "Run \"conflux init\" to a establish a connection with one of your apps."
+    }
+
+    if File.exists?(conflux_manifest_path)
+      manifest_json = JSON.parse(File.read(conflux_manifest_path)) rescue {}
+      name = manifest_json['app']['name']
+
+      if name.nil?
+        tell_user_to_run_init.call
+      else
+        display "Directory currently connected to conflux app: #{name}"
+      end
+    else
+      tell_user_to_run_init.call
+    end
   end
 
   def switch

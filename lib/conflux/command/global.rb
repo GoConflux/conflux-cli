@@ -15,14 +15,10 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     Conflux::Auth.logout
   end
 
-  # Establish connection between pwd and a chosen conflux app
   def init
-    conflux_folder_path = "#{Dir.pwd}/.conflux/"
-    conflux_manifest_path = File.join(conflux_folder_path, 'manifest.json')
-
     if File.exists?(conflux_manifest_path)
       manifest_json = JSON.parse(File.read(conflux_manifest_path)) rescue {}
-      display("Directory already connected to Conflux app: #{manifest_json['app']['name']}")
+      display("Directory already connected to conflux app: #{manifest_json['app']['name']}")
     else
       # Get map of all user's apps grouped by team
       apps_map = Conflux::Api::Users.new.apps
@@ -60,7 +56,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
         # write to package.json the conflux-js node_module
       end
 
-      display("Successfully connected project to Conflux app: #{manifest_json['app']['name']}")
+      display("Successfully connected project to conflux app: #{manifest_json['app']['name']}")
     end
 
     # Add /.conflux/ to .gitignore if not already

@@ -192,5 +192,13 @@ module Conflux
       klass.instance_methods(false)
     end
 
+    def conflux_folder_path
+      "#{Dir.pwd}/.conflux/"
+    end
+
+    def conflux_manifest_path
+      File.join(conflux_folder_path, 'manifest.json')
+    end
+
   end
 end
