@@ -22,10 +22,6 @@ class Conflux::Command::App < Conflux::Command::AbstractCommand
     end
   end
 
-  def switch
-
-  end
-
   #----------------------------------------------------------------------------
 
   module CommandInfo
@@ -40,10 +36,6 @@ class Conflux::Command::App < Conflux::Command::AbstractCommand
           description: 'My P description'
         }
       }
-    end
-
-    module Switch
-      DESCRIPTION = 'Change conflux apps for current directory'
     end
 
   end
