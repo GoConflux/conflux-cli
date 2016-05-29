@@ -74,7 +74,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       app_url = manifest_json['app']['url']
 
       if !app_url.nil?
-        display "Opening conflux app..."
+        display "Opening conflux app #{manifest_json['app']['name']}..."
         with_tty do
           system "open #{app_url}"
         end
