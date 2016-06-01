@@ -28,14 +28,7 @@ class Conflux::Command::App < Conflux::Command::AbstractCommand
 
     module Index
       DESCRIPTION = 'Shows conflux app info for current directory'
-      VALID_ARGS = {
-        '-t' => {
-          description: 'My T description'
-        },
-        '-p' => {
-          description: 'My P description'
-        }
-      }
+      VALID_ARGS = {}
     end
 
   end
