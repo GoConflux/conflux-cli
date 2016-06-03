@@ -1,5 +1,7 @@
 require 'conflux/command/abstract_command'
 require_relative '../auth'
+require_relative '../pull'
+require_relative '../langs'
 require_relative '../api/apps'
 require 'fileutils'
 require 'json'
@@ -16,6 +18,8 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
   end
 
   def init
+    ensure_authed
+
     if File.exists?(conflux_manifest_path)
       manifest_json = JSON.parse(File.read(conflux_manifest_path)) rescue {}
       display("Directory already connected to conflux app: #{manifest_json['app']['name']}")
@@ -39,21 +43,10 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
         f.write(JSON.pretty_generate(manifest_json))
       end
 
-      # Determine which conflux gem/client to install based on type of project
       if is_rails_project?
-        gemfile = File.join(Dir.pwd, 'Gemfile')
-
-        # Write gem 'conflux to Gemfile if not there already
-        if File.read(gemfile).match(/'conflux'|"conflux"/).nil?
-          display('Adding conflux to Gemfile...')
-          File.open(gemfile, 'a') { |f|  f.puts "\n\ngem 'conflux'" }
-        end
-
-        # Run `gem install conflux` if gem not already installed
-        install_conflux_gem if !gem_exists?
-
+        Conflux::Langs.install_ruby_gem('conflux', add_to_gemfile: true)
       elsif is_node_project?
-        # write to package.json the conflux-js node_module
+        # Coming soon?
       end
 
       display("Successfully connected project to conflux app: #{manifest_json['app']['name']}")
@@ -69,6 +62,8 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
   end
 
   def open
+    ensure_authed
+
     if File.exists?(conflux_manifest_path)
       manifest_json = JSON.parse(File.read(conflux_manifest_path)) rescue {}
       app_url = manifest_json['app']['url']
@@ -82,9 +77,13 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
         display "Could not find valid app url inside your conflux manifest.json"
       end
     else
-      display "Directory not currently connected to a conflux app.\n"\
-        "Run \"conflux init\" to a establish a connection with one of your apps."
+      reply_no_conflux_app
     end
+  end
+
+  def pull
+    ensure_authed
+    Conflux::Pull.perform
   end
 
   #----------------------------------------------------------------------------
@@ -108,6 +107,11 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
     module Open
       DESCRIPTION = 'Open Web UI for current conflux app'
+      VALID_ARGS = {}
+    end
+
+    module Pull
+      DESCRIPTION = 'Pull description'
       VALID_ARGS = {}
     end
 

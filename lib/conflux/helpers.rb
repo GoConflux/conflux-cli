@@ -1,8 +1,19 @@
-require 'open3'
+require_relative './auth'
 
 module Conflux
   module Helpers
     extend self
+
+    def ensure_authed
+      @credentials = Conflux::Auth.read_credentials
+
+      if @credentials.nil?
+        error("Permission Denied. Run `conflux login` to login to your Conflux account.")
+      end
+
+      @email = @credentials[0]
+      @password = @credentials[1]
+    end
 
     def error(msg = '')
       $stderr.puts(format_with_bang(msg))
@@ -21,6 +32,11 @@ module Conflux
       " !    " + message.encode('utf-8', 'binary', invalid: :replace, undef: :replace)
                    .split("\n")
                    .join("\n !    ")
+    end
+
+    def reply_no_conflux_app
+      display "Directory not currently connected to a conflux app.\n"\
+      "Run \"conflux init\" to a establish a connection with one of your apps."
     end
 
     def camelize(str)
@@ -160,34 +176,6 @@ module Conflux
       File.exists?(File.join(Dir.pwd, 'package.json'))
     end
 
-    def install_conflux_gem
-      display('Installing conflux ruby gem...')
-
-      # returns array of [stdout, stderr, status]
-      normal_install = Open3.capture3('gem install conflux')
-      errors = normal_install[1]
-
-      # If error exist
-      if !errors.empty?
-        if errors.match(/Gem::FilePermissionError/)
-          display('Got permission error...trying again with sudo.')
-          system('sudo gem install conflux')
-        else
-          puts errors
-        end
-      end
-    end
-
-    def gem_exists?
-      capture = Open3.capture3('gem which conflux')
-
-      begin
-        !capture[0].empty? && capture[1].empty? && capture[2].exitstatus == 0
-      rescue
-        false
-      end
-    end
-
     def manually_added_methods(klass)
       klass.instance_methods(false)
     end
@@ -198,6 +186,22 @@ module Conflux
 
     def conflux_manifest_path
       File.join(conflux_folder_path, 'manifest.json')
+    end
+
+    def conflux_jobs_path
+      File.join(conflux_folder_path, 'jobs.txt')
+    end
+
+    def conflux_yml_path
+      File.join(conflux_folder_path, 'conflux.yml')
+    end
+
+    def past_jobs
+      File.exists?(conflux_jobs_path) ? File.read(conflux_jobs_path).split(',').map(&:strip) : []
+    end
+
+    def gemfile
+      File.join(Dir.pwd, 'Gemfile')
     end
 
   end

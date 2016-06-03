@@ -10,4 +10,8 @@ class Conflux::Api::Apps < Conflux::Api::AbstractApi
     get("#{extension}/manifest", data: { app_slug: app_slug })
   end
 
+  def pull(past_jobs)
+    get("/pull", data: { past_jobs: past_jobs })
+  end
+
 end

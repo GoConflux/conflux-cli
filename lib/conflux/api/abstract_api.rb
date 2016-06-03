@@ -6,17 +6,6 @@ require 'rest-client'
 class Conflux::Api::AbstractApi
   include Conflux::Helpers
 
-  def ensure_authed
-    @credentials = Conflux::Auth.read_credentials
-
-    if @credentials.nil?
-      error("Permission Denied. Run `conflux login` to login to your Conflux account.")
-    end
-
-    @email = @credentials[0]
-    @password = @credentials[1]
-  end
-
   def get(route, data: {}, auth_required: true, error_message: 'Error requesting Conflux data')
     ensure_authed if auth_required
 

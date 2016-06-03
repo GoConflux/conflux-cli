@@ -15,7 +15,7 @@ module Conflux
 
       require 'conflux/command'
 
-      ENV['CONFLUX_HOST'] = 'http://conflux-api.herokuapp.com'
+      ENV['CONFLUX_HOST'] = 'http://localhost:5000'
 
       # Load up all commands
       Conflux::Command.load
