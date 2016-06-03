@@ -3,7 +3,6 @@ require 'conflux/jobs'
 require 'conflux/configs'
 require 'conflux/api/apps'
 require 'rest-client'
-require 'pry'
 
 module Conflux
   module Pull

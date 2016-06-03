@@ -6,8 +6,12 @@ class Conflux::Api::Addons < Conflux::Api::AbstractApi
     '/addons'
   end
 
-  def list
-    get("#{extension}/list")
+  def all
+    get("#{extension}/all")
+  end
+
+  def for_app(app_slug)
+    get("#{extension}/for_app", data: { app_slug: app_slug })
   end
 
 end

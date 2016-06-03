@@ -5,7 +5,6 @@ require_relative '../langs'
 require_relative '../api/apps'
 require 'fileutils'
 require 'json'
-require 'pry'
 
 class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
@@ -91,12 +90,12 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
   module CommandInfo
 
     module Login
-      DESCRIPTION = 'Login to a conflux team'
+      DESCRIPTION = 'Login to your conflux account'
       VALID_ARGS = {}
     end
 
     module Logout
-      DESCRIPTION = 'Log out of current conflux team'
+      DESCRIPTION = 'Log out of your conflux account'
       VALID_ARGS = {}
     end
 
@@ -111,7 +110,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     end
 
     module Pull
-      DESCRIPTION = 'Pull description'
+      DESCRIPTION = 'Fetch any new conflux jobs/configs you don\'t have locally'
       VALID_ARGS = {}
     end
 

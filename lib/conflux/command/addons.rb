@@ -5,12 +5,31 @@ require_relative '../pull'
 class Conflux::Command::Addons < Conflux::Command::AbstractCommand
 
   def index
-    list
+    if ![0, 2].include?(@args.length) || (@args.length == 2 && @args[0] != '-a')
+      # return command help
+      return
+    end
+
+    app_slug = @args[1]
+
+    headers = conditional_headers(@args.empty?)
+
+    endpoint = app_slug.nil? ? '/for_app' : "/for_app?app_slug=#{app_slug}"
+
+    RestClient.get("#{host_url}/addons#{endpoint}", headers) do |response|
+      if response.code == 200
+        addons = JSON.parse(response.body) rescue {}
+        puts to_table(addons, ['slug', 'name', 'plan', 'cost'])
+      else
+        error('Error making request')
+      end
+    end
   end
 
-  def list
-    addons = Conflux::Api::Addons.new.list
-    puts to_table(addons, ['name', 'slug', 'description'])
+  def all
+    addons = Conflux::Api::Addons.new.all
+    puts to_table(addons, ['slug', 'name', 'description'])
+    puts "\nSee plans with conflux addons:plans ADDON"
   end
 
   def add
@@ -22,28 +41,7 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
     addon_slug, plan = @args.first.split(':')
     app_slug = @args[2]
 
-    if app_slug.nil?
-      if File.exists?(conflux_manifest_path)
-        manifest = JSON.parse(File.read(conflux_manifest_path)) rescue {}
-
-        @manifest_creds = manifest['configs'] || {}
-
-        if !@manifest_creds.key?('CONFLUX_USER') || !@manifest_creds.key?('CONFLUX_APP')
-          reply_no_conflux_app
-          return
-        end
-
-        headers = {
-          'Conflux-User' => @manifest_creds['CONFLUX_USER'],
-          'Conflux-App' => @manifest_creds['CONFLUX_APP']
-        }
-      else
-        reply_no_conflux_app
-      end
-    else
-      ensure_authed
-      headers = { 'Conflux-User' => @password }
-    end
+    headers = conditional_headers(app_slug.nil?)
 
     data = {
       app_slug: app_slug,
@@ -67,17 +65,16 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
   module CommandInfo
 
     module Index
-      DESCRIPTION = 'Lists all conflux addons'
-      VALID_ARGS = {}
+      DESCRIPTION = 'List addons for a specific conflux app'
     end
 
-    module List
-      DESCRIPTION = 'Lists all available conflux addons'
+    module All
+      DESCRIPTION = 'List all available addons'
       VALID_ARGS = {}
     end
 
     module Add
-      DESCRIPTION = 'Adds and addon to a conflux app'
+      DESCRIPTION = 'Add an addon to a conflux app'
     end
 
   end

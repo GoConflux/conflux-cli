@@ -37,6 +37,8 @@ module Conflux
     def reply_no_conflux_app
       display "Directory not currently connected to a conflux app.\n"\
       "Run \"conflux init\" to a establish a connection with one of your apps."
+
+      exit(0)
     end
 
     def camelize(str)
@@ -198,6 +200,32 @@ module Conflux
       else
         Dir.home
       end
+    end
+
+    def conditional_headers(conditional)
+      if conditional
+        if File.exists?(conflux_manifest_path)
+          manifest = JSON.parse(File.read(conflux_manifest_path)) rescue {}
+
+          @manifest_creds = manifest['configs'] || {}
+
+          if !@manifest_creds.key?('CONFLUX_USER') || !@manifest_creds.key?('CONFLUX_APP')
+            reply_no_conflux_app
+          end
+
+          headers = {
+            'Conflux-User' => @manifest_creds['CONFLUX_USER'],
+            'Conflux-App' => @manifest_creds['CONFLUX_APP']
+          }
+        else
+          reply_no_conflux_app
+        end
+      else
+        ensure_authed
+        headers = { 'Conflux-User' => @password }
+      end
+
+      headers
     end
 
     def host

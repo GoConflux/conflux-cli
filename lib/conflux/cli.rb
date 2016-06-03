@@ -1,5 +1,4 @@
 require 'conflux/helpers'
-require 'pry'
 
 module Conflux
   module CLI
