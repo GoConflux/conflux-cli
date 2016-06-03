@@ -204,5 +204,9 @@ module Conflux
       File.join(Dir.pwd, 'Gemfile')
     end
 
+    def s3_url
+      ENV['CONFLUX_S3_URL'] || 'http://confluxapp.s3-website-us-west-1.amazonaws.com'
+    end
+
   end
 end

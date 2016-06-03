@@ -1,5 +1,7 @@
 require 'conflux/helpers'
 require 'conflux/langs'
+require 'open3'
+require 'fileutils'
 
 module Conflux
   module Jobs
@@ -36,10 +38,9 @@ module Conflux
         when NEW_LIBRARY
           handle_new_library(asset)
           success = true
-
         when NEW_FILE
           success = true
-
+          handle_new_file(asset)
       end
 
       @succeeded_jobs.push(job['id']) if success
@@ -49,6 +50,30 @@ module Conflux
       case asset['lang']
         when Conflux::Langs::RUBY
           Conflux::Langs.install_ruby_gem(asset['name'], version: asset['version'], add_to_gemfile: true)
+      end
+    end
+
+    def handle_new_file(asset)
+      dest_path = asset['dest_path']
+
+      dest_file = File.join(Dir.pwd, dest_path)
+
+      return if File.exists?(dest_file)
+
+      FileUtils.mkdir_p(File.dirname(dest_file))
+
+      url = "#{s3_url}/#{asset['file']}"
+
+      wget_check = Open3.capture3('which wget')
+
+      display "Creating file \"#{dest_path}\""
+
+      command = wget_check.first.empty? ?
+        "curl -s #{url} >> #{dest_file}" :
+        "wget -qO- #{url} >> #{dest_file}"
+
+      with_tty do
+        system command
       end
     end
 
