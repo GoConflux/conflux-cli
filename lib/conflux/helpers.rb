@@ -43,6 +43,46 @@ module Conflux
       str.split('_').collect(&:capitalize).join
     end
 
+    def to_table(data, headers)
+      column_lengths = []
+      gutter = 2
+      table = ''
+
+      # Figure out column widths based on longest string in each column
+      headers.each { |header|
+        column_lengths << (data.map { |_| _[header] }.max_by(&:length).length)
+      }
+
+      format_row_entry = lambda { |entry, i|
+        entry + (' ' * (column_lengths[i] - entry.length + gutter))
+      }
+
+      # Add headers
+      headers.each_with_index { |header, i|
+        table += format_row_entry.call(header, i)
+      }
+
+      table += "\n"
+
+      # Add line breaks under headers
+      column_lengths.each { |length|
+        table += (('-' * length) + (' ' * gutter))
+      }
+
+      table += "\n"
+
+      # Add rows
+      data.each { |row|
+        headers.each_with_index { |header, i|
+          table += format_row_entry.call(row[header], i)
+        }
+
+        table += "\n"
+      }
+
+      table
+    end
+
     def prompt_user_to_select_app(apps_map)
       answer = nil
       question = "\nWhich Conflux app does this project belong to?\n"

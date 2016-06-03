@@ -145,12 +145,9 @@ module Conflux
       # them alphabetically, and then join them with new lines.
       keys.map { |key|
         command = "  #{key}"
-
-        for i in 0..(commands_column_width - key.length)
-          command += ' '
-        end
-
+        command += (' ' * (commands_column_width - key.length + 1))
         command += "#  #{map[key][:description]}"
+        command
       }.sort_by{ |k| k.downcase }.join("\n")
     end
 
