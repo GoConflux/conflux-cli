@@ -85,6 +85,28 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     Conflux::Pull.perform
   end
 
+  def cost
+    if ![0, 2].include?(@args.length) || (@args.length == 2 && @args[0] != '-a')
+      # return command help
+      return
+    end
+
+    app_slug = @args[1]
+
+    headers = conditional_headers(@args.empty?)
+
+    endpoint = app_slug.nil? ? '/cost' : "/cost?app_slug=#{app_slug}"
+
+    RestClient.get("#{host_url}/apps#{endpoint}", headers) do |response|
+      if response.code == 200
+        body = JSON.parse(response.body) rescue {}
+        puts "#{body['app_slug']} monthly cost: #{body['cost']}"
+      else
+        error('Error making request')
+      end
+    end
+  end
+
   #----------------------------------------------------------------------------
 
   module CommandInfo
@@ -112,6 +134,10 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     module Pull
       DESCRIPTION = 'Fetch any new conflux jobs/configs you don\'t have locally'
       VALID_ARGS = {}
+    end
+
+    module Cost
+      DESCRIPTION = 'View the monthly cost for a conflux app'
     end
 
   end
