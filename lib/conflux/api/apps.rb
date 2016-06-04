@@ -11,7 +11,7 @@ class Conflux::Api::Apps < Conflux::Api::AbstractApi
   end
 
   def pull(past_jobs)
-    get("/pull", data: { past_jobs: past_jobs })
+    get('/pull', data: { past_jobs: past_jobs })
   end
 
 end
