@@ -7,7 +7,7 @@ class Conflux::Api::Apps < Conflux::Api::AbstractApi
   end
 
   def manifest(app_slug)
-    get("#{extension}/manifest", data: { app_slug: app_slug })
+    get("#{extension}/manifest", data: { app_slug: app_slug }, error_message: 'Error connecting to conflux app')
   end
 
   def pull(past_jobs)
