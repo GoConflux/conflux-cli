@@ -60,6 +60,17 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
     end
   end
 
+  def plans
+    if @args.length != 1
+      # show usage info
+      return
+    end
+
+    plans_info = Conflux::Api::Addons.new.plans(@args[0])
+
+    puts to_table(plans_info, ['slug', 'name', 'cost'])
+  end
+
   #----------------------------------------------------------------------------
 
   module CommandInfo
@@ -75,6 +86,10 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
 
     module Add
       DESCRIPTION = 'Add an addon to a conflux app'
+    end
+
+    module Plans
+      DESCRIPTION = 'List all plans for an addon'
     end
 
   end

@@ -14,4 +14,8 @@ class Conflux::Api::Addons < Conflux::Api::AbstractApi
     get("#{extension}/for_app", data: { app_slug: app_slug })
   end
 
+  def plans(addon_slug)
+    get("#{extension}/plans", data: { addon_slug: addon_slug })
+  end
+
 end
