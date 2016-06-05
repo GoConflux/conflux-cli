@@ -6,28 +6,31 @@ require 'rest-client'
 class Conflux::Api::AbstractApi
   include Conflux::Helpers
 
-  def get(route, data: {}, auth_required: true, error_message: 'Error requesting Conflux data')
+  def get(route, data: {}, headers: nil, auth_required: true, error_message: 'Error requesting Conflux data')
     ensure_authed if auth_required
+    headers ||= netrc_headers
 
     route = data.empty? ? route : "#{route}?#{URI.encode_www_form(data)}"
 
-    RestClient.get(url(route), auth_header) do |response|
+    RestClient.get(url(route), headers) do |response|
       handle_json_response(response, error_message)
     end
   end
 
-  def put(route, data: {}, auth_required: true, error_message: 'Error requesting Conflux data')
+  def put(route, data: {}, headers: nil, auth_required: true, error_message: 'Error requesting Conflux data')
     ensure_authed if auth_required
+    headers ||= netrc_headers
 
-    RestClient.put(url(route), data, auth_header) do |response|
+    RestClient.put(url(route), data, headers) do |response|
       handle_json_response(response, error_message)
     end
   end
 
-  def post(route, data: {}, auth_required: true, error_message: 'Error requesting Conflux data')
+  def post(route, data: {}, headers: nil, auth_required: true, error_message: 'Error requesting Conflux data')
     ensure_authed if auth_required
+    headers ||= netrc_headers
 
-    RestClient.post(url(route), data, auth_header) do |response|
+    RestClient.post(url(route), data, headers) do |response|
       handle_json_response(response, error_message)
     end
   end
@@ -38,14 +41,6 @@ class Conflux::Api::AbstractApi
     else
       error(error_message)
     end
-  end
-
-  def auth_header
-    @password ? { 'Conflux-User' => @password } : {}
-  end
-
-  def url(route)
-    "#{host_url}#{route}"
   end
 
 end

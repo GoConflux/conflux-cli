@@ -52,7 +52,11 @@ module Conflux
 
       # Figure out column widths based on longest string in each column
       headers.each { |header|
-        column_lengths << (data.map { |_| _[header] }.max_by(&:length).length)
+        width = data.map { |_| _[header] }.max_by(&:length).length
+
+        width = header.length if width < header.length
+
+        column_lengths << width
       }
 
       format_row_entry = lambda { |entry, i|
@@ -202,8 +206,8 @@ module Conflux
       end
     end
 
-    def conditional_headers(conditional)
-      if conditional
+    def conditional_headers(use_manifest_creds)
+      if use_manifest_creds
         if File.exists?(conflux_manifest_path)
           manifest = JSON.parse(File.read(conflux_manifest_path)) rescue {}
 
@@ -213,10 +217,7 @@ module Conflux
             reply_no_conflux_app
           end
 
-          headers = {
-            'Conflux-User' => @manifest_creds['CONFLUX_USER'],
-            'Conflux-App' => @manifest_creds['CONFLUX_APP']
-          }
+          headers = manifest_headers
         else
           reply_no_conflux_app
         end
@@ -228,8 +229,23 @@ module Conflux
       headers
     end
 
+    def manifest_headers
+      {
+        'Conflux-User' => @manifest_creds['CONFLUX_USER'],
+        'Conflux-App' => @manifest_creds['CONFLUX_APP']
+      }
+    end
+
+    def netrc_headers
+      @password ? { 'Conflux-User' => @password } : {}
+    end
+
     def host
       host_url.gsub(/http:\/\/|https:\/\//, '')
+    end
+
+    def url(route)
+      "#{host_url}#{route}"
     end
 
     def host_url

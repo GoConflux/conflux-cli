@@ -4,3 +4,6 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'conflux'
+
+
+gem 'redis'

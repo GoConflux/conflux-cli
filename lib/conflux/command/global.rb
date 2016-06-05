@@ -1,7 +1,7 @@
 require 'conflux/command/abstract_command'
 require_relative '../auth'
-require_relative '../pull'
 require_relative '../langs'
+require_relative '../pull'
 require_relative '../api/apps'
 require 'fileutils'
 require 'json'
@@ -86,18 +86,8 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
   end
 
   def cost
-    app_slug = @args[1]
-    headers = conditional_headers(@args.empty?)
-    endpoint = app_slug.nil? ? '/cost' : "/cost?app_slug=#{app_slug}"
-
-    RestClient.get("#{host_url}/apps#{endpoint}", headers) do |response|
-      if response.code == 200
-        body = JSON.parse(response.body) rescue {}
-        puts "#{body['app_slug']} monthly cost: #{body['cost']}"
-      else
-        error('Error making request')
-      end
-    end
+    resp = Conflux::Api::Apps.new.cost(@args)
+    display "#{resp['app_slug']} monthly cost: #{resp['cost']}"
   end
 
   #----------------------------------------------------------------------------
