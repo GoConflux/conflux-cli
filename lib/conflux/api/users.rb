@@ -24,4 +24,16 @@ class Conflux::Api::Users < Conflux::Api::AbstractApi
     get("#{extension}/apps")
   end
 
+  def teams
+    get("#{extension}/teams")
+  end
+
+  def for_team(team_slug)
+    get('/teams/users', data: { team_slug: team_slug })
+  end
+
+  def invite(email, team_slug)
+    post('/team_users/invite', data: { email: email, team_slug: team_slug })
+  end
+
 end

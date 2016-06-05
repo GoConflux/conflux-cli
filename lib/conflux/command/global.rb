@@ -3,6 +3,7 @@ require_relative '../auth'
 require_relative '../langs'
 require_relative '../pull'
 require_relative '../api/apps'
+require_relative '../api/users'
 require 'fileutils'
 require 'json'
 
@@ -90,6 +91,11 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     display "#{resp['app_slug']} monthly cost: #{resp['cost']}"
   end
 
+  def teams
+    teams = Conflux::Api::Users.new.teams
+    puts to_table(teams, ['slug', 'name'])
+  end
+
   #----------------------------------------------------------------------------
 
   module CommandInfo
@@ -123,6 +129,11 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       DESCRIPTION = 'View the monthly cost for a conflux app'
       VALID_ARGS = [ [], ['-a', 'APP'] ]
       NO_APP_MEANS_LOCAL = true
+    end
+
+    module Teams
+      DESCRIPTION = 'List all of your conflux teams'
+      VALID_ARGS = [ [] ]
     end
 
   end

@@ -10,7 +10,7 @@ module Conflux
     extend Conflux::Helpers
     extend self
 
-    VARIABLE_CMD_ARGS = ['APP', 'ADDON']
+    VARIABLE_CMD_ARGS = ['APP', 'ADDON', 'TEAM', 'EMAIL']
 
     class CommandFailed < RuntimeError; end
 

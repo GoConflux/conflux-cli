@@ -16,6 +16,23 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
     puts "\n"
   end
 
+  def current
+    ensure_authed
+
+    if File.exists?(conflux_manifest_path)
+      manifest_json = JSON.parse(File.read(conflux_manifest_path)) rescue {}
+      name = manifest_json['app']['name']
+
+      if name.nil?
+        reply_no_conflux_app
+      else
+        display "Directory currently connected to conflux app: #{name}"
+      end
+    else
+      reply_no_conflux_app
+    end
+  end
+
   def use
     # Fetch manifest info for that selected app
     manifest_json = Conflux::Api::Apps.new.manifest(@args[0])
@@ -37,6 +54,11 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
 
     module Index
       DESCRIPTION = 'List all of your conflux apps'
+      VALID_ARGS = [ [] ]
+    end
+
+    module Current
+      DESCRIPTION = 'Shows which conflux app is connected to the current directory'
       VALID_ARGS = [ [] ]
     end
 

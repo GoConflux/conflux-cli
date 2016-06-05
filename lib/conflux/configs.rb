@@ -5,23 +5,32 @@ module Conflux
     extend Conflux::Helpers
     extend self
 
-    def write(configs)
+    def write(configs_map)
       display 'Writing configs to conflux.yml...'
 
       File.open(conflux_yml_path, 'w+') do |f|
-        f.write("\n# ----- Conflux Config Vars ----- \n")
-        f.write("\n# Below are all Conflux configs that currently exist for this app.")
-        f.write("\n# NOTE: Configs listed inside application.yml will always take priority over these.\n")
+        f.write(yaml_header)
 
-        configs.each { |config|
-          key = config['name']
+        configs_map.each { |addon_name, configs|
+          f.write("\n\n# #{addon_name}") if !configs.empty?
 
-          if !ENV.key?(key)
-            description = config['description'].nil? ? '' : "  # #{config['description']}"
-            f.write("\n#{key}#{description}\n")
-          end
+          configs.each { |config|
+            key = config['name']
+
+            if !ENV.key?(key)
+              description = config['description'].nil? ? '' : "  # #{config['description']}"
+              f.write("\n#{key}#{description}")
+            end
+          }
         }
       end
+    end
+
+    def yaml_header
+      "\n# CONFLUX CONFIG VARS:\n\n" \
+    "# All config vars seen here are in use and pulled from Conflux.\n" \
+    "# If any are ever overwritten, they will be marked with \"Overwritten\"\n" \
+    "# If you ever wish to overwrite any of these, do so inside of a config/application.yml file."
     end
 
   end
