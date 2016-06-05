@@ -25,7 +25,7 @@ class Conflux::Command::App < Conflux::Command::AbstractCommand
 
     module Index
       DESCRIPTION = 'Shows which conflux app is connected to the current directory'
-      VALID_ARGS = {}
+      VALID_ARGS = [ [] ]
     end
 
   end

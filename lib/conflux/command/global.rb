@@ -86,15 +86,8 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
   end
 
   def cost
-    if ![0, 2].include?(@args.length) || (@args.length == 2 && @args[0] != '-a')
-      # return command help
-      return
-    end
-
     app_slug = @args[1]
-
     headers = conditional_headers(@args.empty?)
-
     endpoint = app_slug.nil? ? '/cost' : "/cost?app_slug=#{app_slug}"
 
     RestClient.get("#{host_url}/apps#{endpoint}", headers) do |response|
@@ -113,31 +106,33 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
     module Login
       DESCRIPTION = 'Login to your conflux account'
-      VALID_ARGS = {}
+      VALID_ARGS = [ [] ]
     end
 
     module Logout
       DESCRIPTION = 'Log out of your conflux account'
-      VALID_ARGS = {}
+      VALID_ARGS = [ [] ]
     end
 
     module Init
       DESCRIPTION = 'Connect current directory to one of your conflux apps'
-      VALID_ARGS = {}
+      VALID_ARGS = [ [] ]
     end
 
     module Open
       DESCRIPTION = 'Open Web UI for current conflux app'
-      VALID_ARGS = {}
+      VALID_ARGS = [ [] ]
     end
 
     module Pull
       DESCRIPTION = 'Fetch any new conflux jobs/configs you don\'t have locally'
-      VALID_ARGS = {}
+      VALID_ARGS = [ [] ]
     end
 
     module Cost
       DESCRIPTION = 'View the monthly cost for a conflux app'
+      VALID_ARGS = [ [], ['-a', 'APP'] ]
+      NO_APP_MEANS_LOCAL = true
     end
 
   end

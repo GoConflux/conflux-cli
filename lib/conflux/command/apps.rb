@@ -17,11 +17,6 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
   end
 
   def use
-    if @args.length != 1
-      # show usage info
-      return
-    end
-
     # Fetch manifest info for that selected app
     manifest_json = Conflux::Api::Apps.new.manifest(@args[0])
 
@@ -42,11 +37,12 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
 
     module Index
       DESCRIPTION = 'List all of your conflux apps'
-      VALID_ARGS = {}
+      VALID_ARGS = [ [] ]
     end
 
     module Use
       DESCRIPTION = 'Set which conflux app to use for your current directory'
+      VALID_ARGS = [ ['APP'] ]
     end
 
   end

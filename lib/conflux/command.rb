@@ -10,6 +10,8 @@ module Conflux
     extend Conflux::Helpers
     extend self
 
+    VARIABLE_CMD_ARGS = ['APP', 'ADDON']
+
     class CommandFailed < RuntimeError; end
 
     def load
@@ -36,34 +38,24 @@ module Conflux
     def run(cmd, args = [])
       command = get_cmd(cmd)
 
-      # if command is in the @@commands map
       if command
-
         if seeking_command_help?(args)
+          puts "\nUse Case: #{command[:description]}\n"
           respond_with_command_help(cmd)
           return
         end
 
-        if !command[:args].nil?
-          # check for any invalid arguments passed in
-          invalid_args = args - command[:args].keys
-
-          # if invalid args exist, show the user how to properly use the command
-          if !invalid_args.empty?
-            handle_invalid_args(cmd, command, invalid_args)
-            return
-          end
+        if !valid_args?(args, command[:args])
+          handle_invalid_args(cmd)
+          return
         end
 
         command_instance = command[:klass].new(args.dup)
         command_instance.send(command[:method])
-
       elsif seeking_version?(cmd, args)
         respond_with_version
-
       elsif seeking_help?(cmd, args)
         respond_with_help
-
       else
         error([
           "`#{cmd}` is not a conflux command.",
@@ -72,22 +64,41 @@ module Conflux
       end
     end
 
-    def handle_invalid_args(cmd, command, invalid_args)
-      message = 'Invalid argument'
-      message += 's' if invalid_args.length > 1
-      invalid_args = invalid_args.map { |arg| "\"#{arg}\"" }.join(', ')
+    def valid_args?(args, accepted_arg_formats)
+      valid_args = false
 
-      # Explain to the user which arguments were invalid
-      puts " !    #{message}: #{invalid_args}"
+      accepted_arg_formats.each { |format|
+        # if no arguments exist, and no arguments is an accepted format, args are valid.
+        if format.empty? && args.empty?
+          valid_args = true
+        else
+          passed_in_args = args.clone
 
-      # Explain which arguments ARE valid
-      puts "\nValid arguments for \"conflux #{cmd}\":\n"
+          format.each_with_index { |arg, i|
+            passed_in_args[i] = arg if VARIABLE_CMD_ARGS.include?(arg)
+          }
 
-      valid_args = command[:args]
+          @invalid_args = passed_in_args - format
 
-      command_info = usage_info(valid_args.keys, valid_args)
+          valid_args = true if passed_in_args == format
+        end
+      }
 
-      puts "\n#{command_info}\n\n"
+      valid_args
+    end
+
+    def handle_invalid_args(cmd)
+      if !@invalid_args.empty?
+        message = 'Invalid argument'
+        message += 's' if @invalid_args.length > 1
+        args = @invalid_args.map { |arg| "\"#{arg}\"" }.join(', ')
+
+        puts " !    #{message}: #{args}"
+      else
+        puts " !    Invalid command usage"
+      end
+
+      respond_with_command_help(cmd)
     end
 
     def seeking_help?(cmd, args)
@@ -101,7 +112,7 @@ module Conflux
         'Commands:'
       ].join("\n\n")
 
-      commands_info = usage_info(commands.keys, commands)
+      commands_info = usage_info(commands)
 
       puts "\n#{header}"
       puts "\n#{commands_info}\n\n"
@@ -115,16 +126,17 @@ module Conflux
     def respond_with_command_help(cmd)
       command = get_cmd(cmd)
 
-      puts "\nUsage: conflux #{cmd}  #  #{command[:description]}\n\n"
-
-      valid_args = command[:args] || {}
-
-      if !valid_args.empty?
-        command_info = usage_info(valid_args.keys, valid_args)
-
-        puts "Valid arguments:\n"
-        puts "\n#{command_info}\n\n"
+      if command[:no_app_means_local]
+        puts "\n* NOTE: If no app is specified, the conflux app connected to your current directory will be used *\n"
       end
+
+      puts "\nValid Command Formats:\n\n"
+
+      command[:args].each { |format|
+        puts "#  conflux #{cmd} #{format.join(' ')}\n"
+      }
+
+      puts "\n"
     end
 
     def seeking_version?(cmd, args)
@@ -135,9 +147,9 @@ module Conflux
       display "conflux #{Conflux::VERSION}"
     end
 
-    def usage_info(keys, map)
+    def usage_info(map)
+      keys = map.keys
       commands_column_width = keys.max_by(&:length).length + 1
-
       commands_column_width += 2 if commands_column_width < 12
 
       # iterate through each of the commands, create an array
@@ -179,15 +191,22 @@ module Conflux
 
       command_info_module = command_class::CommandInfo.const_get(camelize(action))
 
-      valid_args = command_info_module.const_defined?('VALID_ARGS') ? command_info_module::VALID_ARGS : nil
-      description = command_info_module.const_defined?('DESCRIPTION') ? command_info_module::DESCRIPTION : nil
+      valid_args = command_info_module.const_defined?('VALID_ARGS') ?
+        command_info_module::VALID_ARGS : []
+
+      description = command_info_module.const_defined?('DESCRIPTION') ?
+        command_info_module::DESCRIPTION : ''
+
+      no_app_means_local = command_info_module.const_defined?('NO_APP_MEANS_LOCAL') ?
+        command_info_module::NO_APP_MEANS_LOCAL : false
 
       commands[command] = {
         method: action,
         klass: command_class,
         basename: basename,
         args: valid_args,
-        description: description
+        description: description,
+        no_app_means_local: no_app_means_local
       }
     end
 

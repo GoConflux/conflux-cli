@@ -5,15 +5,8 @@ require_relative '../pull'
 class Conflux::Command::Addons < Conflux::Command::AbstractCommand
 
   def index
-    if ![0, 2].include?(@args.length) || (@args.length == 2 && @args[0] != '-a')
-      # return command help
-      return
-    end
-
     app_slug = @args[1]
-
     headers = conditional_headers(@args.empty?)
-
     endpoint = app_slug.nil? ? '/for_app' : "/for_app?app_slug=#{app_slug}"
 
     RestClient.get("#{host_url}/addons#{endpoint}", headers) do |response|
@@ -29,15 +22,10 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
   def all
     addons = Conflux::Api::Addons.new.all
     puts to_table(addons, ['slug', 'name', 'description'])
-    puts "\nSee plans with conflux addons:plans ADDON"
+    puts "\nSee plans with conflux addons:plans ADDON\n\n"
   end
 
   def add
-    if ![1, 3].include?(@args.length) || (@args.length == 3 && @args[1] != '-a')
-      # return command help
-      return
-    end
-
     addon_slug, plan = @args.first.split(':')
     app_slug = @args[2]
 
@@ -61,13 +49,7 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
   end
 
   def plans
-    if @args.length != 1
-      # show usage info
-      return
-    end
-
     plans_info = Conflux::Api::Addons.new.plans(@args[0])
-
     puts to_table(plans_info, ['slug', 'name', 'cost'])
   end
 
@@ -77,19 +59,24 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
 
     module Index
       DESCRIPTION = 'List addons for a specific conflux app'
+      VALID_ARGS = [ [], ['-a', 'APP'] ]
+      NO_APP_MEANS_LOCAL = true
     end
 
     module All
       DESCRIPTION = 'List all available addons'
-      VALID_ARGS = {}
+      VALID_ARGS = [ [] ]
     end
 
     module Add
       DESCRIPTION = 'Add an addon to a conflux app'
+      VALID_ARGS = [ ['ADDON'], ['ADDON', '-a', 'APP'] ]
+      NO_APP_MEANS_LOCAL = true
     end
 
     module Plans
       DESCRIPTION = 'List all plans for an addon'
+      VALID_ARGS = [ ['ADDON'] ]
     end
 
   end
