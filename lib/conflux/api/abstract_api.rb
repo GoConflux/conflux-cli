@@ -3,6 +3,8 @@ require 'conflux/auth'
 require 'conflux/helpers'
 require 'rest-client'
 
+# Class wrapping RestClient that easily manages which Conflux request headers to use based
+# on the command, it's arguments, and if auth is even required.
 class Conflux::Api::AbstractApi
   include Conflux::Helpers
 

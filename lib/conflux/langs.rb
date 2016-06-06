@@ -8,8 +8,9 @@ module Conflux
 
     RUBY = 'ruby'
 
+    # Return library "name" for a certain language
     def library_name(lang)
-      case
+      case lang
         when RUBY
           'gem'
       end
@@ -26,6 +27,7 @@ module Conflux
       if errors.empty?
         add_gem_to_gemfile(name, version: version) if add_to_gemfile
       else
+        # Try sudo if getting permission error
         if errors.match(/Gem::FilePermissionError/)
           display('Got permission error...trying again with sudo.')
           system("sudo gem install #{name}")
@@ -37,8 +39,8 @@ module Conflux
       end
     end
 
+    # Append a gem to Gemfile if it doesn't already exist
     def add_gem_to_gemfile(name, version: nil)
-      # Write gem to Gemfile if not there already
       if File.read(gemfile).match(Regexp.new("'#{name}'|\"#{name}\"")).nil?
         display("Adding #{name} to Gemfile...")
         File.open(gemfile, 'a') { |f| f.puts "\n\ngem '#{name}'" }

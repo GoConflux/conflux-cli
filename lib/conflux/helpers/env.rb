@@ -1,6 +1,8 @@
 module Conflux
   module Helpers
     class Env
+      # Will come in handy when adding windows support
+
       def self.[](key)
         val = ENV[key]
 

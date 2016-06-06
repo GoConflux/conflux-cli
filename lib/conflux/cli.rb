@@ -16,7 +16,9 @@ module Conflux
 
       ENV['CONFLUX_HOST'] = 'http://localhost:5000'
 
+      # Find and run command if it exists
       Conflux::Command.find_command(command, args)
+
     rescue Errno::EPIPE => e
       error(e.message)
     rescue Interrupt => e

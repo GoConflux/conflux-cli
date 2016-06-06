@@ -283,14 +283,13 @@ module Conflux
       @@commands ||= {}
     end
 
+    # register a command's info to the @@commands map - utilized when calling `conflux help`
     def register_command(basename, action, command_class, global: false)
       command = global ? action : (action == 'index' ? basename : "#{basename}:#{action}")
 
       command_info_module = command_class::CommandInfo.const_get(camelize(action))
 
-      commands[command] = {
-        description: command_description(command_info_module),
-      }
+      commands[command] = { description: command_description(command_info_module) }
     end
 
   end

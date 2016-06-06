@@ -52,10 +52,10 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       display("Successfully connected project to conflux app: #{manifest_json['app']['name']}")
     end
 
-    # Add /.conflux/ to .gitignore if not already
     gitignore = File.join(Dir.pwd, '.gitignore')
     gi_entries = File.read(gitignore).split("\n")
 
+    # Add /.conflux/ to .gitignore if not already
     if !gi_entries.include?('.conflux/') && !gi_entries.include?('/.conflux/')
       File.open(gitignore, 'a') { |f| f.puts "\n/.conflux/\n" }
     end

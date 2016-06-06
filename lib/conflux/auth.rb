@@ -25,8 +25,10 @@ module Conflux
 
     def ask_for_and_save_credentials
       begin
+        # Prompt the user for email/password
         @credentials = ask_for_credentials
 
+        # Write the creds to the user's ~/.netrc file
         write_credentials
 
         @credentials
@@ -50,6 +52,7 @@ module Conflux
       # Add the credentials to the netrc file
       netrc[host] = @credentials
 
+      # Save that shit
       netrc.save
     end
 
@@ -71,6 +74,7 @@ module Conflux
 
       password = running_on_windows? ? ask_for_password_on_windows : ask_for_password
 
+      # Fetch a user token from the conflux api with this email/password combo
       user_token = Conflux::Api::Users.new.login(email, password)
 
       display "Successfully logged in as #{email}"
@@ -78,6 +82,7 @@ module Conflux
       [email, user_token]
     end
 
+    # Pulled straight from Heroku's CLI and not even tested yet.
     def ask_for_password_on_windows
       require 'Win32API'
       char = nil
@@ -99,14 +104,28 @@ module Conflux
 
     def ask_for_password
       begin
-        echo_off
+        echo_off  # make the password input hidden
         password = allow_user_response
         puts
       ensure
-        echo_on
+        echo_on   # flip input visibility back on
       end
 
       password
+    end
+
+    # Hide user input
+    def echo_off
+      with_tty do
+        system 'stty -echo'
+      end
+    end
+
+    # Show user input
+    def echo_on
+      with_tty do
+        system 'stty echo'
+      end
     end
 
     def get_email
@@ -117,27 +136,7 @@ module Conflux
       get_credentials[1]
     end
 
-    def api_key(email = get_email, password = get_password)
-      # get valid user token for email/password combo by making ajax post
-      api_key = '1234567'
-      api_key
-    rescue => e
-      error e.message
-      exit 1
-    end
-
-    def echo_off
-      with_tty do
-        system 'stty -echo'
-      end
-    end
-
-    def echo_on
-      with_tty do
-        system 'stty echo'
-      end
-    end
-
+    # Read the ~/.netrc file, which contains user credentials for various host domains
     def netrc
       @netrc ||= begin
         File.exists?(netrc_path) && Netrc.read(netrc_path)

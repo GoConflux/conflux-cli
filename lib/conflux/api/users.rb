@@ -7,8 +7,7 @@ class Conflux::Api::Users < Conflux::Api::AbstractApi
   end
 
   def login(email, password)
-    resp = post(
-      "#{extension}/login",
+    resp = post("#{extension}/login",
       data: {
         email: email,
         password: password
@@ -29,11 +28,18 @@ class Conflux::Api::Users < Conflux::Api::AbstractApi
   end
 
   def for_team(team_slug)
-    get('/teams/users', data: { team_slug: team_slug })
+    get('/teams/users',
+      data: { team_slug: team_slug }
+    )
   end
 
   def invite(email, team_slug)
-    post('/team_users/invite', data: { email: email, team_slug: team_slug })
+    post('/team_users/invite',
+      data: {
+        email: email,
+        team_slug: team_slug
+      }
+    )
   end
 
 end

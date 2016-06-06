@@ -4,6 +4,7 @@ module Conflux
   module Helpers
     extend self
 
+    # ensure a conflux user is authed (ensure creds exist in .netrc file)
     def ensure_authed
       @credentials = Conflux::Auth.read_credentials
 
@@ -20,11 +21,7 @@ module Conflux
       exit(1)
     end
 
-    def display(msg = '')
-      puts(msg)
-      $stdout.flush
-    end
-
+    # Add a bang to an error message
     def format_with_bang(message)
       return message if !message.is_a?(String)
       return '' if message.to_s.strip == ''
@@ -34,6 +31,13 @@ module Conflux
                    .join("\n !    ")
     end
 
+    def display(msg = '')
+      puts(msg)
+      $stdout.flush
+    end
+
+    # Called if user tries to run a command that relies on there being a conflux app connected
+    # to the user's current working directory.
     def reply_no_conflux_app
       display "Directory not currently connected to a conflux app.\n"\
       "Run \"conflux init\" to a establish a connection with one of your apps."
@@ -41,16 +45,18 @@ module Conflux
       exit(0)
     end
 
+    # convert string from underscores to camelcase
     def camelize(str)
       str.split('_').collect(&:capitalize).join
     end
 
+    # format some data into a table to then be displayed to the user
     def to_table(data, headers)
       column_lengths = []
       gutter = 2
       table = ''
 
-      # Figure out column widths based on longest string in each column
+      # Figure out column widths based on longest string in each column (including the header string)
       headers.each { |header|
         width = data.map { |_| _[header] }.max_by(&:length).length
 
@@ -59,6 +65,7 @@ module Conflux
         column_lengths << width
       }
 
+      # format the length of a table cell string to make it as wide as the column (by adding extra spaces)
       format_row_entry = lambda { |entry, i|
         entry + (' ' * (column_lengths[i] - entry.length + gutter))
       }
@@ -89,10 +96,13 @@ module Conflux
       table
     end
 
+    # Called during `conflux init` so that the user can choose which conflux app
+    # to connect with his current working directory.
     def prompt_user_to_select_app(apps_map)
       answer = nil
       question = "\nWhich Conflux app does this project belong to?\n"
 
+      # Keep asking until the user responds with one of the possible answers
       until !answer.nil?
         count = 0
         app_slugs = []
@@ -100,7 +110,7 @@ module Conflux
         puts question
 
         apps_map.each { |team, apps|
-          puts "\n#{team}:\n\n"
+          puts "\n#{team}:\n\n"   # separate apps out by team for easier selection
 
           apps.each { |slug|
             count += 1
@@ -113,14 +123,14 @@ module Conflux
 
         response = allow_user_response
 
+        # it's fine if the user responds with an exact app slug
         if app_slugs.include?(response)
           answer = response
+
+        # otherwise, they can just respond with the number next to the app they wish to choose
         else
           response_int = response.to_i rescue 0
-
-          if response_int > 0
-            answer = app_slugs[response_int - 1]
-          end
+          answer = app_slugs[response_int - 1 ]if response_int > 0
         end
 
         question = "\nSorry I didn't catch that. Can you respond with the number that appears next to your answer?"
@@ -129,6 +139,7 @@ module Conflux
       answer
     end
 
+    # Ask a free response question with a optional prefix (prefix example --> 'Password: ')
     def ask_free_response_question(question, answer_prefix = '')
       puts question
       print answer_prefix
@@ -136,9 +147,11 @@ module Conflux
       response
     end
 
+    # Ask a multiple choice question, with numbered answers
     def ask_mult_choice_question(question, answers)
       answer = nil
 
+      # Prompt will continue until user has responded with one of the numbers next to an answer
       until !answer.nil? && answer.is_a?(Integer)
         puts question
         answers.each_with_index { |answer, i| puts "(#{i + 1}) #{answer}" }
@@ -206,7 +219,10 @@ module Conflux
       end
     end
 
+    # Get one of two sets of headers for an AJAX request based on a passed in bool.
     def conditional_headers(use_manifest_creds)
+      # If boolean is true, use the credentials listed inside .conflux/manifest.json
+      # for your set of headers
       if use_manifest_creds
         if File.exists?(conflux_manifest_path)
           manifest = JSON.parse(File.read(conflux_manifest_path)) rescue {}
@@ -221,9 +237,12 @@ module Conflux
         else
           reply_no_conflux_app
         end
+
+      # Otherwise, default to using the user's conflux password stored in .netrc file.
+      # Ensure user is authed first though.
       else
         ensure_authed
-        headers = { 'Conflux-User' => @password }
+        headers = netrc_headers
       end
 
       headers
@@ -240,10 +259,12 @@ module Conflux
       @password ? { 'Conflux-User' => @password } : {}
     end
 
+    # Strip the protocol + following slashes off of a url
     def host
       host_url.gsub(/http:\/\/|https:\/\//, '')
     end
 
+    # Create a full url for an API call from just its route
     def url(route)
       "#{host_url}/api#{route}"
     end
@@ -260,10 +281,12 @@ module Conflux
       File.exists?(File.join(Dir.pwd, 'package.json'))
     end
 
+    # Get an array (of symbols) of the user-defined methods for a klass
     def manually_added_methods(klass)
       klass.instance_methods(false)
     end
 
+    # Path for the git-ignored folder that holds all info tying a directory to a specific conflux app
     def conflux_folder_path
       "#{Dir.pwd}/.conflux/"
     end
@@ -272,14 +295,19 @@ module Conflux
       File.join(conflux_folder_path, 'manifest.json')
     end
 
+    # Jobs file is just a text file with a comma-delimited set of strings referencing the conflux jobs
+    # that have already ran locally for a specific conflux app.
     def conflux_jobs_path
       File.join(conflux_folder_path, 'jobs.txt')
     end
 
+    # conflux.yml serves as a reference to see which conflux config vars are currently
+    # being set and used in the app.
     def conflux_yml_path
       File.join(conflux_folder_path, 'conflux.yml')
     end
 
+    # Get an array of conflux jobs that have already ran locally
     def past_jobs
       File.exists?(conflux_jobs_path) ? File.read(conflux_jobs_path).split(',').map(&:strip) : []
     end
@@ -288,6 +316,7 @@ module Conflux
       File.join(Dir.pwd, 'Gemfile')
     end
 
+    # Get the conflux S3 public url
     def s3_url
       ENV['CONFLUX_S3_URL'] || 'http://confluxapp.s3-website-us-west-1.amazonaws.com'
     end
