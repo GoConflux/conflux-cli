@@ -16,11 +16,7 @@ module Conflux
 
       ENV['CONFLUX_HOST'] = 'http://localhost:5000'
 
-      # Load up all commands
-      Conflux::Command.load
-
-      # Run command
-      Conflux::Command.run(command, args)
+      Conflux::Command.find_command(command, args)
     rescue Errno::EPIPE => e
       error(e.message)
     rescue Interrupt => e

@@ -35,6 +35,17 @@ class Conflux::Api::AbstractApi
     end
   end
 
+  def delete(route, data: {}, headers: nil, auth_required: true, error_message: 'Error requesting Conflux data')
+    ensure_authed if auth_required
+    headers ||= netrc_headers
+
+    route = data.empty? ? route : "#{route}?#{URI.encode_www_form(data)}"
+
+    RestClient.delete(url(route), headers) do |response|
+      handle_json_response(response, error_message)
+    end
+  end
+
   def handle_json_response(response, error_message)
     if response.code == 200
       JSON.parse(response.body) rescue {}

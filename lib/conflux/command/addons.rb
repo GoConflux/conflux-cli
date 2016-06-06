@@ -26,6 +26,17 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
     Conflux::Pull.perform
   end
 
+  def remove
+    addon_slug, plan = @args.first.split(':')
+    app_slug = @args[2]
+
+    resp = Conflux::Api::Addons.new.remove(app_slug, addon_slug, plan)
+
+    display "Successfully removed #{addon_slug} from #{resp['app_slug'] || app_slug}."
+
+    Conflux::Pull.perform
+  end
+
   def plans
     plans_info = Conflux::Api::Addons.new.plans(@args[0])
     puts to_table(plans_info, ['slug', 'name', 'cost'])
@@ -48,6 +59,12 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
 
     module Add
       DESCRIPTION = 'Add an addon to a conflux app'
+      VALID_ARGS = [ ['ADDON'], ['ADDON', '-a', 'APP'] ]
+      NO_APP_MEANS_LOCAL = true
+    end
+
+    module Remove
+      DESCRIPTION = 'Remove an addon from a conflux app'
       VALID_ARGS = [ ['ADDON'], ['ADDON', '-a', 'APP'] ]
       NO_APP_MEANS_LOCAL = true
     end

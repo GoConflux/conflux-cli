@@ -22,4 +22,8 @@ class Conflux::Api::Addons < Conflux::Api::AbstractApi
     post('/app_addons', data: { app_slug: app_slug, addon_slug: addon_slug, plan: plan }, headers: conditional_headers(app_slug.nil?))
   end
 
+  def remove(app_slug, addon_slug, plan)
+    delete('/app_addons', data: { app_slug: app_slug, addon_slug: addon_slug, plan: plan }, headers: conditional_headers(app_slug.nil?))
+  end
+
 end

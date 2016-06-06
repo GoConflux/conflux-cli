@@ -3,82 +3,143 @@ require 'conflux/version'
 require 'optparse'
 require 'pathname'
 
-GLOBAL_COMMAND_FILE = 'global'
-
 module Conflux
   module Command
     extend Conflux::Helpers
     extend self
 
-    VARIABLE_CMD_ARGS = ['APP', 'ADDON', 'TEAM', 'EMAIL']
+    CMD_BLACKLIST = ['APP', 'ADDON', 'TEAM', 'EMAIL']
 
-    class CommandFailed < RuntimeError; end
+    # Finds file/method for command
+    def find_command(cmd, args = [])
+      @current_cmd = cmd
+      @current_args = args
 
-    def load
-      # Require all the ruby command files
-      command_file_paths.each do |file|
-        require file
+      respond_with_help if seeking_help?
+      respond_with_version if seeking_version?
 
-        # Get basename for the file without the extension (Ex: global, app, etc.)
-        basename = get_basename_from_file(file)
+      # Separate out primary/secondary commands based on if command was namespaced
+      # e.g. `conflux addons vs. conflux addons:add`
+      primary_cmd, secondary_cmd = @current_cmd.split(':')
 
-        # Camelcase the basename to be the class name
-        class_name = camelize(basename)
+      # Get the command file path (string) for the primary command
+      primary_cmd_file = file_for_command(primary_cmd)
 
-        # Store reference to the class associated with this basename
-        command_class = Conflux::Command.const_get(class_name)
+      # If the primary command has it's own file, require it
+      primary_cmd_file_exists = File.exists?(primary_cmd_file)
+      require primary_cmd_file if primary_cmd_file_exists
 
-        # For each of the user-defined methods inside this class, create a command for it
-        manually_added_methods(command_class).each { |method|
-          register_command(basename, method.to_s, command_class, global: (basename == GLOBAL_COMMAND_FILE))
-        }
-      end
-    end
+      # If a secondary command exists, the primary_cmd_file must be where our command method lies
+      if !secondary_cmd.nil?
+        error_no_command if !primary_cmd_file_exists
 
-    def run(cmd, args = [])
-      command = get_cmd(cmd)
+        # Get command_klass for file path. Example response --> Conflux::Command::Addons
+        command_klass = klass_for_file(primary_cmd_file)
 
-      if command
-        if seeking_command_help?(args)
-          puts "\nUse Case: #{command[:description]}\n"
-          respond_with_command_help(cmd)
-          return
-        end
+        # Error out if the command klass doesn't have a method named <secondary_cmd>
+        error_no_command if !klass_has_method?(command_klass, secondary_cmd)
 
-        if !valid_args?(args, command[:args])
-          handle_invalid_args(cmd)
-          return
-        end
+        run(command_klass, secondary_cmd)
 
-        command_instance = command[:klass].new(args.dup)
-        command_instance.send(command[:method])
-      elsif seeking_version?(cmd, args)
-        respond_with_version
-      elsif seeking_help?(cmd, args)
-        respond_with_help
+      # If there's no secondary command, there are 2 options for where the command method could be (in order of priority):
+      # (1) Inside the primary command file as the 'index' method
+      # (2) Inside the global command file, as a method named <primary_cmd>
       else
-        error([
-          "`#{cmd}` is not a conflux command.",
-          "See `conflux help` for a list of available commands."
-        ].compact.join("\n"))
+        # Store lambda for later
+        try_global = lambda {
+          require 'conflux/command/global'
+          command_klass = Conflux::Command::Global
+          error_no_command if !klass_has_method?(command_klass, primary_cmd)
+          run(command_klass, primary_cmd)
+        }
+
+        # Number 1 above. If primary_cmd file exists, call the index method on it if it exists.
+        # If index method doens't exist, check to see if method is a global command.
+        if primary_cmd_file_exists
+          # Get command_klass for file path. Example response --> Conflux::Command::Addons
+          command_klass = klass_for_file(primary_cmd_file)
+
+          klass_has_method?(command_klass, 'index') ? run(command_klass, 'index') : try_global.call
+
+        # Number 2 above. Check to see if method is a global command inside command/global.rb
+        else
+          try_global.call
+        end
       end
     end
 
-    def valid_args?(args, accepted_arg_formats)
+    # Call a method on a klass with certain arguments.
+    # Will validate arguments first before calling method.
+    def run(klass, method)
+      # Get the command info for this method on this klass
+      command_info_module = klass::CommandInfo.const_get(camelize(method))
+
+      # If seeking help for this command with --help or -h
+      if seeking_command_help?(@current_args)
+        puts "\nUse Case: #{command_description(command_info_module)}\n"
+
+        # respond with command-specific help
+        respond_with_command_help(command_info_module)
+        return
+      end
+
+      # get the valid arguments defined for this comand
+      valid_args = command_valid_args(command_info_module)
+
+      if !valid_args?(valid_args)
+        handle_invalid_args(command_info_module)
+        return
+      end
+
+      klass.new(@current_args.dup).send(method)
+    end
+
+    # Get a command klass back from a file path:
+    # Example I/O: 'command/apps' --> Conflux::Command::Apps
+    def klass_for_file(file)
+      # Get basename for the file without the extension
+      basename = get_basename_from_file(file)
+
+      # Camelcase the basename to be the klass name
+      klass_name = camelize(basename)
+
+      # return the command klass for this klass_name
+      Conflux::Command.const_get(klass_name)
+    end
+
+    # Create a command file path from the name of a command
+    def file_for_command(command)
+      File.join(File.dirname(__FILE__), 'command', "#{command}.rb")
+    end
+
+    # Check to see if user-defined method exists on a klass
+    def klass_has_method?(klass, method)
+      manually_added_methods(klass).include?(method.to_sym)
+    end
+
+    def error_no_command
+      error([
+        "`#{@current_cmd}` is not a conflux command.",
+        "See `conflux help` for a list of available commands."
+      ].compact.join("\n"))
+    end
+
+    # Check if passed-in arguments are valid for a specific format
+    def valid_args?(accepted_arg_formats)
       valid_args = false
 
       accepted_arg_formats.each { |format|
         # if no arguments exist, and no arguments is an accepted format, args are valid.
-        if format.empty? && args.empty?
+        if format.empty? && @current_args.empty?
           valid_args = true
         else
-          passed_in_args = args.clone
+          passed_in_args = @current_args.clone
 
           format.each_with_index { |arg, i|
-            passed_in_args[i] = arg if VARIABLE_CMD_ARGS.include?(arg)
+            passed_in_args[i] = arg if CMD_BLACKLIST.include?(arg)
           }
 
-          @invalid_args = passed_in_args - format
+          @invalid_args = passed_in_args - format - [nil]
 
           valid_args = true if passed_in_args == format
         end
@@ -87,7 +148,8 @@ module Conflux
       valid_args
     end
 
-    def handle_invalid_args(cmd)
+    # Respond to the user in the instance of invalid arguments.
+    def handle_invalid_args(command_info_module)
       if !@invalid_args.empty?
         message = 'Invalid argument'
         message += 's' if @invalid_args.length > 1
@@ -98,14 +160,29 @@ module Conflux
         puts " !    Invalid command usage"
       end
 
-      respond_with_command_help(cmd)
+      respond_with_command_help(command_info_module)
     end
 
-    def seeking_help?(cmd, args)
-      args.length == 0 && (cmd == 'help' || cmd == '-h' || cmd.empty?)
+    def command_valid_args(command_info_module)
+      command_info_module.const_defined?('VALID_ARGS') ? command_info_module::VALID_ARGS : []
+    end
+
+    def command_description(command_info_module)
+      command_info_module.const_defined?('DESCRIPTION') ? command_info_module::DESCRIPTION : ''
+    end
+
+    def use_local_app_if_not_defined?(command_info_module)
+      command_info_module.const_defined?('NO_APP_MEANS_LOCAL') ? command_info_module::NO_APP_MEANS_LOCAL : false
+    end
+
+    # stdin is `conflux help` or `conflux -h`
+    def seeking_help?
+      @current_args.length == 0 && (@current_cmd == 'help' || @current_cmd == '-h' || @current_cmd.empty?)
     end
 
     def respond_with_help
+      create_commands_map
+
       header = [
         'Usage: conflux COMMAND [command-specific-arguments]',
         'Type "conflux COMMAND --help" for more details about each command',
@@ -116,37 +193,32 @@ module Conflux
 
       puts "\n#{header}"
       puts "\n#{commands_info}\n\n"
+      exit(0)
     end
 
-    def seeking_command_help?(args)
-      args.include?('-h') || args.include?('--help')
-    end
+    # Create a commands map to respond to `conflux help` with.
+    def create_commands_map
+      # Require all the ruby command files
+      command_file_paths.each do |file|
+        require file
 
-    # Command-specific help
-    def respond_with_command_help(cmd)
-      command = get_cmd(cmd)
+        # Get basename for the file without the extension
+        basename = get_basename_from_file(file)
 
-      if command[:no_app_means_local]
-        puts "\n* NOTE: If no app is specified, the conflux app connected to your current directory will be used *\n"
+        # Camelcase the basename to be the klass name
+        klass_name = camelize(basename)
+
+        # return the command klass for this klass_name
+        command_klass = Conflux::Command.const_get(klass_name)
+
+        # For each of the user-defined methods inside this class, create a command for it
+        manually_added_methods(command_klass).each { |method|
+          register_command(basename, method.to_s, command_klass, global: basename == 'global')
+        }
       end
-
-      puts "\nValid Command Formats:\n\n"
-
-      command[:args].each { |format|
-        puts "#  conflux #{cmd} #{format.join(' ')}\n"
-      }
-
-      puts "\n"
     end
 
-    def seeking_version?(cmd, args)
-      args.length == 0 && (cmd == '--version' || cmd == '-v')
-    end
-
-    def respond_with_version
-      display "conflux #{Conflux::VERSION}"
-    end
-
+    # Format a map of commands into help output format
     def usage_info(map)
       keys = map.keys
       commands_column_width = keys.max_by(&:length).length + 1
@@ -163,19 +235,48 @@ module Conflux
       }.sort_by{ |k| k.downcase }.join("\n")
     end
 
-    def get_basename_from_file(file)
-      basename = Pathname.new(file).basename.to_s
-      basename = basename[0..(basename.rindex('.') - 1)]
-      basename
+    # Seeking command-specific help. e.g. `conflux apps --help`
+    def seeking_command_help?(args)
+      args.include?('-h') || args.include?('--help')
     end
 
+    # Respond to command-specific help
+    def respond_with_command_help(command_info_module)
+      help = ''
+
+      if use_local_app_if_not_defined?(command_info_module)
+        help += "\n* NOTE: If no app is specified, the conflux app connected to your current directory will be used *\n"
+      end
+
+      help += "\nValid Command Formats:\n\n"
+
+      command_valid_args(command_info_module).each { |format|
+        help += "#  conflux #{@current_cmd} #{format.join(' ')}\n"
+      }
+
+      puts "#{help}\n"
+    end
+
+    # stdin is `conflux --version` or `conflux -v`
+    def seeking_version?
+      @current_args.length == 0 && (@current_cmd == '--version' || @current_cmd == '-v')
+    end
+
+    def respond_with_version
+      display "conflux #{Conflux::VERSION}"
+      exit(0)
+    end
+
+    # Return just the basename for a file, no extensions.
+    def get_basename_from_file(file)
+      basename = Pathname.new(file).basename.to_s
+      basename[0..(basename.rindex('.') - 1)]
+    end
+
+    # Feturn an array of all command file paths, with the exception of abstract_command.rb
     def command_file_paths
       abstract_file = File.join(File.dirname(__FILE__), 'command', 'abstract_command.rb')
       Dir[File.join(File.dirname(__FILE__), 'command', '*.rb')] - [abstract_file]
-    end
-
-    def get_cmd(cmd)
-      commands[cmd]
     end
 
     def commands
@@ -183,30 +284,12 @@ module Conflux
     end
 
     def register_command(basename, action, command_class, global: false)
-      if global
-        command = action
-      else
-        command = (action == 'index') ? basename : "#{basename}:#{action}"
-      end
+      command = global ? action : (action == 'index' ? basename : "#{basename}:#{action}")
 
       command_info_module = command_class::CommandInfo.const_get(camelize(action))
 
-      valid_args = command_info_module.const_defined?('VALID_ARGS') ?
-        command_info_module::VALID_ARGS : []
-
-      description = command_info_module.const_defined?('DESCRIPTION') ?
-        command_info_module::DESCRIPTION : ''
-
-      no_app_means_local = command_info_module.const_defined?('NO_APP_MEANS_LOCAL') ?
-        command_info_module::NO_APP_MEANS_LOCAL : false
-
       commands[command] = {
-        method: action,
-        klass: command_class,
-        basename: basename,
-        args: valid_args,
-        description: description,
-        no_app_means_local: no_app_means_local
+        description: command_description(command_info_module),
       }
     end
 
