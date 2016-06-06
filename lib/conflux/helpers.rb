@@ -245,7 +245,7 @@ module Conflux
     end
 
     def url(route)
-      "#{host_url}#{route}"
+      "#{host_url}/api#{route}"
     end
 
     def host_url
