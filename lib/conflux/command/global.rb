@@ -98,7 +98,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
   def configs
     configs_map = Conflux::Api::Apps.new.configs(@args)
-    
+
     if configs_map.empty?
       puts 'No config vars yet for this Conflux app.'
     else
