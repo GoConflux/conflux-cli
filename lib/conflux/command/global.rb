@@ -96,6 +96,29 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     puts to_table(teams, ['slug', 'name'])
   end
 
+  def configs
+    configs_map = Conflux::Api::Apps.new.configs(@args)
+    
+    if configs_map.empty?
+      puts 'No config vars yet for this Conflux app.'
+    else
+      configs_arr = []
+
+      configs_map.values.each { |configs|
+        configs_arr += configs
+      }
+
+      text = ''
+
+      configs_arr.sort_by { |info| info['name'] }.each { |config|
+        description = (config['description'].nil? || config['description'].empty?) ? '' : "  # #{config['description']}"
+        text += "#{config['name']}#{description}\n"
+      }
+
+      puts text
+    end
+  end
+
   #----------------------------------------------------------------------------
 
   module CommandInfo
@@ -134,6 +157,12 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     module Teams
       DESCRIPTION = 'List all of your conflux teams'
       VALID_ARGS = [ [] ]
+    end
+
+    module Configs
+      DESCRIPTION = 'List all configs for a conflux app'
+      VALID_ARGS = [ [], ['-a', 'APP'] ]
+      NO_APP_MEANS_LOCAL = true
     end
 
   end

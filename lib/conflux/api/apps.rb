@@ -28,4 +28,11 @@ class Conflux::Api::Apps < Conflux::Api::AbstractApi
       headers: conditional_headers(true))
   end
 
+  def configs(args)
+    get("#{extension}/configs",
+      data: { app_slug: args[1] },
+      headers: conditional_headers(args.empty?)
+    )
+  end
+
 end
