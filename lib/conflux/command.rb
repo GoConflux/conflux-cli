@@ -120,7 +120,7 @@ module Conflux
     def error_no_command
       error([
         "`#{@current_cmd}` is not a conflux command.",
-        "See `conflux help` for a list of available commands."
+        "Type `conflux help` for a list of available commands."
       ].compact.join("\n"))
     end
 

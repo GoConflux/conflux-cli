@@ -65,6 +65,7 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
 
     with_tty do
       system "heroku config:set CONFLUX_USER=#{creds['CONFLUX_USER']} CONFLUX_APP=#{creds['CONFLUX_APP']} -a #{@args[2]}"
+      display "Successfully connected Heroku app #{@args[2]} to conflux app #{@args[0]}"
     end
   end
 
