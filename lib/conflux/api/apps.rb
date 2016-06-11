@@ -35,4 +35,10 @@ class Conflux::Api::Apps < Conflux::Api::AbstractApi
     )
   end
 
+  def team_user_app_tokens(app_slug)
+    get("#{extension}/team_user_app_tokens",
+      data: { app_slug: app_slug }
+    )
+  end
+
 end

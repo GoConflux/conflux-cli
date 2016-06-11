@@ -2,6 +2,7 @@ require 'conflux/command/abstract_command'
 require_relative '../api/users'
 require_relative '../api/apps'
 require 'fileutils'
+require 'open3'
 
 class Conflux::Command::Apps < Conflux::Command::AbstractCommand
 
@@ -48,7 +49,26 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
     display("Successfully connected project to conflux app: #{manifest_json['app']['name']}")
   end
 
-  #----------------------------------------------------------------------------
+  def heroku_use
+    creds = Conflux::Api::Apps.new.team_user_app_tokens(@args[0])
+
+    heroku_check = Open3.capture3('which heroku')
+
+    if heroku_check.first.empty?
+      display [
+        "The Heroku toolbelt needs to be installed before running this command.",
+        "Go to https://toolbelt.heroku.com to install this toolbelt."
+      ].join("\n")
+
+      return
+    end
+
+    with_tty do
+      system "heroku config:set CONFLUX_USER=#{creds['CONFLUX_USER']} CONFLUX_APP=#{creds['CONFLUX_APP']} -a #{@args[2]}"
+    end
+  end
+
+  #--------------------------------- -------------------------------------------
 
   module CommandInfo
 
@@ -65,6 +85,11 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
     module Use
       DESCRIPTION = 'Set which conflux app to use for your current directory'
       VALID_ARGS = [ ['APP'] ]
+    end
+
+    module HerokuUse
+      DESCRIPTION = 'Set which conflux app to use for a specific heroku app'
+      VALID_ARGS = [ ['APP', '-a', 'HEROKU_APP'] ]
     end
 
   end

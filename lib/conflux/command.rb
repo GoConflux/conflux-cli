@@ -8,7 +8,7 @@ module Conflux
     extend Conflux::Helpers
     extend self
 
-    CMD_BLACKLIST = ['APP', 'ADDON', 'TEAM', 'EMAIL']
+    CMD_BLACKLIST = ['APP', 'ADDON', 'TEAM', 'EMAIL', 'HEROKU_APP']
 
     # Finds file/method for command
     def find_command(cmd, args = [])
@@ -177,7 +177,7 @@ module Conflux
 
     # stdin is `conflux help` or `conflux -h`
     def seeking_help?
-      @current_args.length == 0 && (@current_cmd == 'help' || @current_cmd == '-h' || @current_cmd.empty?)
+      @current_args.length == 0 && (@current_cmd.empty? || ['help', '--help', '-h'].include?(@current_cmd))
     end
 
     def respond_with_help
