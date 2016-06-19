@@ -76,7 +76,7 @@ module Conflux
 
       # If seeking help for this command with --help or -h
       if seeking_command_help?(@current_args)
-        puts "\nUse Case: #{command_description(command_info_module)}\n"
+        puts "\nPurpose: #{command_description(command_info_module)}\n"
 
         # respond with command-specific help
         respond_with_command_help(command_info_module)

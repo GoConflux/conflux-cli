@@ -111,7 +111,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       text = ''
 
       configs_arr.sort_by { |info| info['name'] }.each { |config|
-        description = (config['description'].nil? || config['description'].empty?) ? '' : "  # #{config['description']}"
+        description = (config['description'].nil? || config['description'].empty?) ? '' : " # #{config['description']}"
         text += "#{config['name']}#{description}\n"
       }
 
