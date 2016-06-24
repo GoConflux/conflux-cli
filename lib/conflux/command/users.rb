@@ -5,7 +5,7 @@ class Conflux::Command::Users < Conflux::Command::AbstractCommand
 
   def index
     users = Conflux::Api::Users.new.for_team(@args[1])
-    puts to_table(users, ['email', 'name'])
+    puts to_table(users, ['email', 'name', 'role'])
   end
 
   def add

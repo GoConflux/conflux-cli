@@ -6,6 +6,13 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
 
   def index
     addons = Conflux::Api::Addons.new.for_app(@args)
+
+    if (addons || []).length == 0
+      puts 'No addons exist yet for this app.'
+      puts 'See how to provision add-ons with "conflux addons:add --help"'
+      return
+    end
+
     puts to_table(addons, ['slug', 'name', 'plan', 'cost'])
   end
 
