@@ -36,7 +36,7 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
 
   def use
     # Fetch manifest info for that selected app
-    manifest_json = Conflux::Api::Apps.new.manifest(@args[0])
+    manifest_json = Conflux::Api::Apps.new.manifest(@args[0])[:manifest]
 
     # Create /.conflux/ folder if doesn't already exist
     FileUtils.mkdir_p(conflux_folder_path) if !File.exists?(conflux_folder_path)

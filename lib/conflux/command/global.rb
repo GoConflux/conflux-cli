@@ -6,6 +6,7 @@ require_relative '../api/apps'
 require_relative '../api/users'
 require 'fileutils'
 require 'json'
+require 'open3'
 
 class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
@@ -33,7 +34,8 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       display 'Configuring manifest.json...'
 
       # Fetch manifest info for that selected app
-      manifest_json = Conflux::Api::Apps.new.manifest(selected_app_slug)
+      resp = Conflux::Api::Apps.new.manifest(selected_app_slug)
+      manifest_json = resp[:manifest]
 
       # Create /.conflux/ folder if doesn't already exist
       FileUtils.mkdir_p(conflux_folder_path) if !File.exists?(conflux_folder_path)
@@ -44,7 +46,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       end
 
       if is_rails_project?
-        Conflux::Langs.install_ruby_gem('conflux', add_to_gemfile: true)
+        Conflux::Langs.install_ruby_gem('conflux', version: resp[:latest_gem_version], add_to_gemfile: true)
       elsif is_node_project?
         # Coming soon
       end
@@ -119,6 +121,18 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     end
   end
 
+  def update
+    wget_check = Open3.capture3('which wget')
+
+    # Choose command that will be used to fetch file contents based on if
+    # `wget` is intalled. If `wget` isn't installed, default to using `curl`.
+    command = wget_check.first.empty? ? 'curl -s' : 'wget -O-'
+
+    with_tty do
+      system "#{command} #{host_url}/install.sh | sh"
+    end
+  end
+
   #----------------------------------------------------------------------------
 
   module CommandInfo
@@ -163,6 +177,11 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       DESCRIPTION = 'List all configs for a conflux app'
       VALID_ARGS = [ [], ['-a', 'APP'] ]
       NO_APP_MEANS_LOCAL = true
+    end
+
+    module Update
+      DESCRIPTION = 'Update to the latest version of the conflux toolbelt'
+      VALID_ARGS = [ [] ]
     end
 
   end
