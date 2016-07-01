@@ -35,7 +35,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
       # Fetch manifest info for that selected app
       resp = Conflux::Api::Apps.new.manifest(selected_app_slug)
-      manifest_json = resp[:manifest]
+      manifest_json = resp['manifest']
 
       # Create /.conflux/ folder if doesn't already exist
       FileUtils.mkdir_p(conflux_folder_path) if !File.exists?(conflux_folder_path)
@@ -46,7 +46,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       end
 
       if is_rails_project?
-        Conflux::Langs.install_ruby_gem('conflux', version: resp[:latest_gem_version], add_to_gemfile: true)
+        Conflux::Langs.install_ruby_gem('conflux', version: resp['latest_gem_version'], add_to_gemfile: true)
       elsif is_node_project?
         # Coming soon
       end
