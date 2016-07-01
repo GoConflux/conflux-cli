@@ -270,7 +270,7 @@ module Conflux
     end
 
     def host_url
-      ENV['CONFLUX_HOST'] || 'http://api.goconflux.com'
+      ENV['CONFLUX_HOST'] || 'http://conflux-api.herokuapp.com'
     end
 
     def is_rails_project?
