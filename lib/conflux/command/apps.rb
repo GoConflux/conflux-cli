@@ -84,7 +84,7 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
     end
 
     module Use
-      DESCRIPTION = 'Set which conflux app to use for your current directory'
+      DESCRIPTION = 'Set which conflux app to use for the current directory'
       VALID_ARGS = [ ['APP'] ]
     end
 

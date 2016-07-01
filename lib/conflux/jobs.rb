@@ -81,7 +81,7 @@ module Conflux
       # Check if `wget` is installed
       wget_check = Open3.capture3('which wget')
 
-      display "Creating file \"#{dest_path}\""
+      display "Creating file: \"#{dest_path}\""
 
       # Choose command that will be used to fetch file contents based on if
       # `wget` is intalled. If `wget` isn't installed, default to using `curl`.

@@ -46,17 +46,17 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       if is_rails_project?
         Conflux::Langs.install_ruby_gem('conflux', add_to_gemfile: true)
       elsif is_node_project?
-        # Coming soon?
+        # Coming soon
       end
 
       display("Successfully connected project to conflux app: #{manifest_json['app']['name']}")
     end
 
     gitignore = File.join(Dir.pwd, '.gitignore')
-    gi_entries = File.read(gitignore).split("\n")
+    gi_entries = File.exists?(gitignore) ? File.read(gitignore).split("\n") : nil
 
     # Add /.conflux/ to .gitignore if not already
-    if !gi_entries.include?('.conflux/') && !gi_entries.include?('/.conflux/')
+    if !gi_entries.nil? && !gi_entries.include?('.conflux/') && !gi_entries.include?('/.conflux/')
       File.open(gitignore, 'a') { |f| f.puts "\n/.conflux/\n" }
     end
   end

@@ -20,6 +20,16 @@ class Gem::Specification
   end
 end
 
+config_vars_path = File.join(Dir.pwd, 'configs.yml')
+# Setting Config Vars for development
+if File.exists?(config_vars_path)
+  require 'yaml'
+  configs = YAML::load_file(config_vars_path) rescue {}
+  configs.each { |key, val|
+    ENV[key] = val if !ENV.key?(key)
+  }
+end
+
 require 'conflux/cli'
 
 Conflux::CLI.start!(*ARGV)

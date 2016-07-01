@@ -77,7 +77,7 @@ module Conflux
       # Fetch a user token from the conflux api with this email/password combo
       user_token = Conflux::Api::Users.new.login(email, password)
 
-      display "Successfully logged in as #{email}"
+      display "Successfully logged in as #{email}."
 
       [email, user_token]
     end

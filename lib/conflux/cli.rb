@@ -14,8 +14,6 @@ module Conflux
 
       require 'conflux/command'
 
-      ENV['CONFLUX_HOST'] = 'http://conflux-api.herokuapp.com'
-
       # Find and run command if it exists
       Conflux::Command.find_command(command, args)
 
