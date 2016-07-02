@@ -18,7 +18,7 @@ module Conflux
 
     def install_ruby_gem(name, version: nil, add_to_gemfile: false)
       # if the gem hasn't been installed yet
-      if !gem_installed?(name) || force_install
+      if !gem_installed?(name)
         command = "gem install #{name}"
         command += " -v #{version}" if !version.nil?
 
