@@ -60,7 +60,7 @@ module Conflux
         gem_name, gem_version = gem_info.split(' ')
 
         if gem_name == gem
-          puts gem_version.gsub(/[()]/, '')
+          return gem_version.gsub(/[()]/, '')
         end
       }
     end
