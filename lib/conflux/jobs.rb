@@ -79,7 +79,7 @@ module Conflux
       FileUtils.mkdir_p(File.dirname(dest_file))
 
       # Create url for file from Conflux's S3
-      url = "#{s3_url}/#{asset['file']}"
+      url = "#{s3_url}/#{asset['contents']}"
 
       # Check if `wget` is installed
       wget_check = Open3.capture3('which wget')
