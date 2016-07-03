@@ -73,7 +73,7 @@ module Conflux
         line = "gem '#{name}'"
         line += ", '#{version}'" if !version.nil?
 
-        File.open(gemfile, 'a') { |f| f.puts "\n\n#{line}" }
+        File.open(gemfile, 'a') { |f| f.puts "\n#{line}\n" }
       end
     end
 

@@ -65,12 +65,15 @@ module Conflux
 
     # Add a new file (via public url) to the project if it doesn't already exist.
     def handle_new_file(asset)
-      dest_path = asset['dest_path']
+      dest_path = asset['path']
 
       dest_file = File.join(Dir.pwd, dest_path)
 
       # Return if file already exists
-      return if File.exists?(dest_file)
+      if File.exists?(dest_file)
+        display "Not creating file: \"#{dest_path}\" --> File already exists."
+        return
+      end
 
       # Ensure all parent directories of the file exist
       FileUtils.mkdir_p(File.dirname(dest_file))
