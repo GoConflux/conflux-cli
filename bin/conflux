@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 
 # resolve bin path, ignoring symlinks
-require "pathname"
+require 'pathname'
+
 bin_file = Pathname.new(__FILE__).realpath
 
 lib_path = (bin_file.to_s == '/usr/local/bin/conflux') ?
@@ -20,12 +21,13 @@ class Gem::Specification
   end
 end
 
-config_vars_path = File.join(Dir.pwd, 'configs.yml')
-# Setting Config Vars for development
+# Create way to set config vars during development --> put them in configs.yml inside root of this project
+config_vars_path = File.join(File.expand_path('../', lib_path), 'configs.yml')
+
 if File.exists?(config_vars_path)
   require 'yaml'
   configs = YAML::load_file(config_vars_path) rescue {}
-  configs.each { |key, val|
+  (configs || {}).each { |key, val|
     ENV[key] = val if !ENV.key?(key)
   }
 end

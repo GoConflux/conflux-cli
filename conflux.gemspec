@@ -17,7 +17,6 @@ Gem::Specification.new do |spec|
   spec.executables   = ["conflux"]
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "rest-client", "1.6.8"
   spec.add_dependency "netrc", "0.10.3"
 
   spec.add_development_dependency "rails", "~> 4.2"

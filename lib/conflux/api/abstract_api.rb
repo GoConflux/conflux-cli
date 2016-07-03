@@ -1,10 +1,11 @@
 require 'conflux/api'
 require 'conflux/auth'
 require 'conflux/helpers'
-require 'rest-client'
+require 'net/http'
+require 'net/https'
+require 'uri'
+require 'json'
 
-# Class wrapping RestClient that easily manages which Conflux request headers to use based
-# on the command, it's arguments, and if auth is even required.
 class Conflux::Api::AbstractApi
   include Conflux::Helpers
 
@@ -12,44 +13,59 @@ class Conflux::Api::AbstractApi
     ensure_authed if auth_required
     headers ||= netrc_headers
 
-    route = data.empty? ? route : "#{route}?#{URI.encode_www_form(data)}"
-
-    RestClient.get(url(route), headers) do |response|
-      handle_json_response(response, error_message)
-    end
-  end
-
-  def put(route, data: {}, headers: nil, auth_required: true, error_message: 'Error requesting Conflux data')
-    ensure_authed if auth_required
-    headers ||= netrc_headers
-
-    RestClient.put(url(route), data, headers) do |response|
-      handle_json_response(response, error_message)
-    end
+    form_request(Net::HTTP::Get, route, data, headers, error_message)
   end
 
   def post(route, data: {}, headers: nil, auth_required: true, error_message: 'Error requesting Conflux data')
     ensure_authed if auth_required
     headers ||= netrc_headers
 
-    RestClient.post(url(route), data, headers) do |response|
-      handle_json_response(response, error_message)
-    end
+    json_request(Net::HTTP::Post, route, data, headers, error_message)
+  end
+
+  def put(route, data: {}, headers: nil, auth_required: true, error_message: 'Error requesting Conflux data')
+    ensure_authed if auth_required
+    headers ||= netrc_headers
+
+    json_request(Net::HTTP::Put, route, data, headers, error_message)
   end
 
   def delete(route, data: {}, headers: nil, auth_required: true, error_message: 'Error requesting Conflux data')
     ensure_authed if auth_required
     headers ||= netrc_headers
 
-    route = data.empty? ? route : "#{route}?#{URI.encode_www_form(data)}"
+    form_request(Net::HTTP::Delete, route, data, headers, error_message)
+  end
 
-    RestClient.delete(url(route), headers) do |response|
-      handle_json_response(response, error_message)
-    end
+  def http
+    uri = URI.parse(host_url)
+    Net::HTTP.new(uri.host, uri.port)
+  end
+
+  def form_request(net_obj, route, data, headers, error_message)
+    route = data.empty? ? route : "#{route}?#{URI.encode_www_form(data)}"
+    request = net_obj.new("/api#{route}")
+    request.add_field('Content-Type', 'application/x-www-form-urlencoded')
+    add_headers(request, headers)
+    response = http.request(request)
+    handle_json_response(response, error_message)
+  end
+
+  def json_request(net_obj, route, data, headers, error_message)
+    request = net_obj.new("/api#{route}")
+    request.add_field('Content-Type', 'application/json')
+    add_headers(request, headers)
+    request.body = data.to_json
+    response = http.request(request)
+    handle_json_response(response, error_message)
+  end
+
+  def add_headers(request, headers = {})
+    headers.each { |key, val| request.add_field(key, val) }
   end
 
   def handle_json_response(response, error_message)
-    if response.code == 200
+    if response.code.to_i == 200
       JSON.parse(response.body) rescue {}
     else
       error(error_message)
