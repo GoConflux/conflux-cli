@@ -44,12 +44,18 @@ module Conflux
       # The gem has already been installed on this computer (regardless of version). Don't reinstall.
       else
         display("#{name} gem already installed.")
-        add_gem_to_gemfile(name, version: nil) if add_to_gemfile
+        # Since this gem is already installed on this computer with a certain version,
+        # let's use THIS version when adding the gem to the Gemfile...not the version passed in.
+        add_gem_to_gemfile(name, version: version_of_gem_installed(name)) if add_to_gemfile
       end
     end
 
     def gem_installed?(name)
       !Open3.capture3("gem which #{name}").first.empty?
+    end
+
+    def version_of_gem_installed(gem)
+      Open3.capture3("gem which #{gem}").first.split('/').reverse[2].gsub("#{gem}-", '')
     end
 
     # Append a gem to Gemfile if it doesn't already exist
