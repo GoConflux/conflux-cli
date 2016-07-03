@@ -264,11 +264,6 @@ module Conflux
       host_url.gsub(/http:\/\/|https:\/\//, '')
     end
 
-    # Create a full url for an API call from just its route
-    def url(route)
-      "#{host_url}/api#{route}"
-    end
-
     def host_url
       ENV['CONFLUX_HOST'] || 'http://api.goconflux.com'
     end
