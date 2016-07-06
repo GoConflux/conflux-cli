@@ -73,6 +73,10 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
     end
   end
 
+  def clone
+    display "Cloning apps coming soon!"
+  end
+
   #--------------------------------- -------------------------------------------
 
   module CommandInfo
@@ -95,6 +99,11 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
     module HerokuUse
       DESCRIPTION = 'Set which conflux app to use for a specific heroku app'
       VALID_ARGS = [ ['APP', '-a', 'HEROKU_APP'] ]
+    end
+
+    module Clone
+      DESCRIPTION = 'Clone a conflux app'
+      VALID_ARGS = [ ['APP', 'NEW_APP'] ]
     end
 
   end

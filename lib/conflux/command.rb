@@ -8,7 +8,7 @@ module Conflux
     extend Conflux::Helpers
     extend self
 
-    CMD_BLACKLIST = ['APP', 'ADDON', 'TEAM', 'EMAIL', 'HEROKU_APP']
+    CMD_BLACKLIST = ['APP', 'ADDON', 'TEAM', 'EMAIL', 'HEROKU_APP', 'NEW_APP']
 
     # Finds file/method for command
     def find_command(cmd, args = [])
