@@ -265,7 +265,7 @@ module Conflux
     end
 
     def host_url
-      ENV['CONFLUX_HOST'] || 'https://api.goconflux.com'
+      ENV['CONFLUX_HOST'] || 'http://api.goconflux.com'
     end
 
     def is_rails_project?
