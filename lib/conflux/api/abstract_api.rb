@@ -39,7 +39,9 @@ class Conflux::Api::AbstractApi
 
   def http
     uri = URI.parse(host_url)
-    Net::HTTP.new(uri.host, uri.port)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http
   end
 
   def form_request(net_obj, route, data, headers, error_message)
