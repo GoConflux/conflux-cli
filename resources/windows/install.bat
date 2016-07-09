@@ -24,7 +24,7 @@ if %ERRORLEVEL% == 0 goto useCURL
 
 :: If neither wget nor curl is installed, error out.
 echo Error Installing Conflux Toolbelt: Either 'wget' or 'curl' is required to proceed with installation.
-goto commonExit
+goto error
 
 :: Fetch conflux-cli.tgz with wget
 :useWGET
@@ -41,6 +41,7 @@ goto check7z
 where 7z
 if %ERRORLEVEL% == 0 goto extract
 echo Error Installing Conflux Toolbelt: 7-zip is required to proceed with installation.
+goto error
 
 :: Extract the contents of conflux-cli.tgz into a conflux folder inside Program Files
 :extract
@@ -53,3 +54,6 @@ xcopy /y "C:\Program Files\conflux\resources\windows\conflux.bat" "C:\Program Fi
 
 :commonExit
 pause
+
+:error
+exit /b %ERRORLEVEL%
