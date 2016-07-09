@@ -1,7 +1,7 @@
 require 'conflux/helpers'
 require 'conflux/helpers/env'
 require 'conflux/api/users'
-require 'netrc'
+require 'deps/netrc'
 require 'fileutils'
 
 module Conflux
