@@ -1,3 +1,8 @@
+:: Batch file run by conflux-toolbelt.exe (the only thing conflux-toolbelt.exe does)
+:: Purpose: Fetches the conflux toolbelt and installs it at C:\Program Files\conflux
+:: *Since "Program Files" access is required, conflux-toolbelt.exe must be run as an administrator.
+:: C:\Program Files\conflux\bin must be added to PATH afterwards.
+
 @echo off
 
 set CONFLUX_CLI_URL="http://confluxapp.s3-website-us-west-1.amazonaws.com/toolbelt/conflux-cli.tgz"
