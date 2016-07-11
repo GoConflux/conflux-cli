@@ -316,5 +316,16 @@ module Conflux
       ENV['CONFLUX_S3_URL'] || 'http://confluxapp.s3-website-us-west-1.amazonaws.com'
     end
 
+    def open_url(url)
+      if running_on_a_mac?
+        system "open #{url}"
+      elsif running_on_windows?
+        system "explorer #{url}"
+      else
+        # Probably some flavor of Linux
+        system "xdg-open #{url}"
+      end
+    end
+
   end
 end

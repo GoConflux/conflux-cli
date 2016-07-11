@@ -72,9 +72,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
       if !app_url.nil?
         display "Opening conflux app #{manifest_json['app']['name']}..."
-        with_tty do
-          system "open #{app_url}"
-        end
+        open_url(app_url)
       else
         display "Could not find valid app url inside your conflux manifest.json"
       end
@@ -122,14 +120,18 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
   end
 
   def update
-    wget_check = Open3.capture3('which wget')
+    if running_on_windows?
+      display "To update the toolbelt on Windows, just re-run conflux-toolbelt.exe as an administrator."
+    else
+      wget_check = Open3.capture3('which wget')
 
-    # Choose command that will be used to fetch file contents based on if
-    # `wget` is intalled. If `wget` isn't installed, default to using `curl`.
-    command = wget_check.first.empty? ? 'curl -s' : 'wget -O-'
+      # Choose command that will be used to fetch file contents based on if
+      # `wget` is intalled. If `wget` isn't installed, default to using `curl`.
+      command = wget_check.first.empty? ? 'curl -s' : 'wget -O-'
 
-    with_tty do
-      system "#{command} #{host_url}/install.sh | sh"
+      with_tty do
+        system "#{command} #{host_url}/install.sh | sh"
+      end
     end
   end
 
