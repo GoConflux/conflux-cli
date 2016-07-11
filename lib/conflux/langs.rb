@@ -23,7 +23,7 @@ module Conflux
         command += " -v #{version}" if !version.nil?
 
         display("Installing #{name} ruby gem...")
-
+        
         install = Open3.capture3(command)
         errors = install[1]
 
@@ -55,7 +55,8 @@ module Conflux
     end
 
     def version_of_gem_installed(gem)
-      Open3.capture3("gem which #{gem}").first.split('/').reverse[2].gsub("#{gem}-", '')
+      gdep = Gem::Dependency.new(gem).matching_specs.max_by(&:version)
+      gdep.nil? ? nil : gdep.version.version
     end
 
     # Append a gem to Gemfile if it doesn't already exist
