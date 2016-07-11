@@ -30,8 +30,8 @@ module Conflux
         if errors.empty?
           add_gem_to_gemfile(name, version: version) if add_to_gemfile
         else
-          # Try sudo if getting permission error
-          if errors.match(/Gem::FilePermissionError/)
+          # Try again with 'sudo' if getting permission error and not on windows.
+          if errors.match(/Gem::FilePermissionError/) && !running_on_windows?
             display('Got permission error...trying again with sudo.')
             system("sudo #{command}")
 

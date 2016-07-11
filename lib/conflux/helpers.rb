@@ -1,4 +1,5 @@
 require_relative './auth'
+require 'open3'
 
 module Conflux
   module Helpers
@@ -325,6 +326,22 @@ module Conflux
         # Probably some flavor of Linux
         system "xdg-open #{url}"
       end
+    end
+
+    def cmd_for_file_fetch(quiet: false)
+      wget_check = running_on_windows? ? Open3.capture3('where wget') : Open3.capture3('which wget')
+
+      # Return wget command if it exists
+      return quiet ? 'wget -qO-' : 'wget -O-' if !wget_check.first.empty?
+
+      # If wget doesn't exist, check to see if curl does
+      curl_check = running_on_windows? ? Open3.capture3('where curl') : Open3.capture3('which curl')
+
+      # Return curl command if it exists
+      return 'curl -s' if !curl_check.first.empty?
+
+      # Error out if neither wget not curl exist.
+      error "File Fetch Error: 'wget' or 'curl' need to be installed in order to proceed."
     end
 
   end

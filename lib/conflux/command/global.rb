@@ -6,7 +6,6 @@ require_relative '../api/apps'
 require_relative '../api/users'
 require 'fileutils'
 require 'json'
-require 'open3'
 
 class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
@@ -123,15 +122,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     if running_on_windows?
       display "To update the toolbelt on Windows, just re-run conflux-toolbelt.exe as an administrator."
     else
-      wget_check = Open3.capture3('which wget')
-
-      # Choose command that will be used to fetch file contents based on if
-      # `wget` is intalled. If `wget` isn't installed, default to using `curl`.
-      command = wget_check.first.empty? ? 'curl -s' : 'wget -O-'
-
-      with_tty do
-        system "#{command} #{host_url}/install.sh | sh"
-      end
+      system "#{cmd_for_file_fetch} #{host_url}/install.sh | sh"
     end
   end
 

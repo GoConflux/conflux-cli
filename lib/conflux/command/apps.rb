@@ -55,8 +55,7 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
 
   def heroku_use
     creds = Conflux::Api::Apps.new.team_user_app_tokens(@args[0])
-
-    heroku_check = Open3.capture3('which heroku')
+    heroku_check = running_on_windows? ? Open3.capture3('where heroku') : Open3.capture3('which heroku')
 
     if heroku_check.first.empty?
       display [

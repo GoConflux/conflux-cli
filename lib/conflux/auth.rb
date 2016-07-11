@@ -104,11 +104,11 @@ module Conflux
 
     def ask_for_password
       begin
-        echo_off  # make the password input hidden
+        echo_off # make the password input hidden
         password = allow_user_response
         puts
       ensure
-        echo_on   # flip input visibility back on
+        echo_on # flip input visibility back on
       end
 
       password

@@ -1,6 +1,5 @@
 require 'conflux/helpers'
 require 'conflux/langs'
-require 'open3'
 require 'fileutils'
 
 module Conflux
@@ -81,20 +80,12 @@ module Conflux
       # Create url for file from Conflux's S3 --> asset['contents'] should start with '/'
       url = "#{s3_url}#{asset['contents']}"
 
-      # Check if `wget` is installed
-      wget_check = Open3.capture3('which wget')
+      # Get wget or curl depending on which is installed. Error out if neither are installed.
+      cmd = cmd_for_file_fetch(quiet: true)
 
       display "Creating file: \"#{dest_path}\""
 
-      # Choose command that will be used to fetch file contents based on if
-      # `wget` is intalled. If `wget` isn't installed, default to using `curl`.
-      command = wget_check.first.empty? ?
-        "curl -s #{url} >> #{dest_file}" :
-        "wget -qO- #{url} >> #{dest_file}"
-
-      with_tty do
-        system command
-      end
+      system "#{cmd} #{url} >> #{dest_file}"
     end
 
     # Append job id's to the .conflux/jobs.txt file to keep track of which jobs
