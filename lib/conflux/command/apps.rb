@@ -86,7 +86,7 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
     end
 
     module Current
-      DESCRIPTION = 'Shows which conflux app is connected to the current directory'
+      DESCRIPTION = 'Show which conflux app is connected to the current directory'
       VALID_ARGS = [ [] ]
     end
 
