@@ -70,7 +70,7 @@ module Conflux
 
       # Return if file already exists
       if File.exists?(dest_file)
-        display "Not creating file: \"#{dest_path}\" --> File already exists."
+        display "Not creating file: #{dest_path} --> File already exists."
         return
       end
 
@@ -83,7 +83,7 @@ module Conflux
       # Get wget or curl depending on which is installed. Error out if neither are installed.
       cmd = cmd_for_file_fetch(quiet: true)
 
-      display "Creating file: \"#{dest_path}\""
+      display "Creating file: #{dest_path}"
 
       system "#{cmd} #{url} >> #{dest_file}"
     end
