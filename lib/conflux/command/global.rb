@@ -50,6 +50,9 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
         # Coming soon
       end
 
+      # Go ahead and perform `conflux pull`
+      Conflux::Pull.perform
+
       display("Successfully connected project to conflux app: #{manifest_json['app']['name']}")
     end
 
