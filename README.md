@@ -1,6 +1,6 @@
 # Conflux CLI (Toolbelt)
 
-The Conflux CLI is used to manage Conflux Add-on bundles from the command line.
+The Conflux CLI is used to manage Conflux Add-on bundles and more from the command line.
 
 For more about Conflux, see <https://www.goconflux.com>
 
