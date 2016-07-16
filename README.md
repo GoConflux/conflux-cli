@@ -1,4 +1,4 @@
-## Conflux CLI (Toolbelt)
+# Conflux CLI (Toolbelt)
 
 The Conflux CLI is used to manage Conflux Add-on bundles from the command line.
 
@@ -6,10 +6,10 @@ For more about Conflux, see <https://www.goconflux.com>
 
 To get started, see <https://www.goconflux.com/toolbelt>
 
-# Contributing
+## Contributing
 
 To contribute to this repo, submit a pull request or raise an issue in the issues section with an appropriate issue tag.
 
-# License
+## License
 
 [MIT License](http://opensource.org/licenses/MIT).
