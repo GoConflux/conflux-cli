@@ -7,7 +7,7 @@ module Conflux
     extend self
 
     def perform
-      # Fetch for this conflux app:
+      # Fetch for this conflux bundle:
       # (1) any new jobs that haven't run yet
       # (2) all config vars
       resp = Conflux::Api::Bundles.new.pull

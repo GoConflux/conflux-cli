@@ -235,7 +235,7 @@ module Conflux
       }.sort_by{ |k| k.downcase }.join("\n")
     end
 
-    # Seeking command-specific help. e.g. `conflux apps --help`
+    # Seeking command-specific help. e.g. `conflux bundles --help`
     def seeking_command_help?(args)
       args.include?('-h') || args.include?('--help')
     end
@@ -245,7 +245,7 @@ module Conflux
       help = ''
 
       if use_local_app_if_not_defined?(command_info_module)
-        help += "\n* NOTE: If no app is specified, the conflux app connected to your current directory will be used *\n"
+        help += "\n* NOTE: If no app is specified, the conflux bundle connected to your current directory will be used *\n"
       end
 
       help += "\nValid Command Formats:\n\n"

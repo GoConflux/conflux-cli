@@ -22,7 +22,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
     if File.exists?(conflux_manifest_path)
       manifest_json = JSON.parse(File.read(conflux_manifest_path)) rescue {}
-      display("Directory already connected to conflux app: #{manifest_json['app']['name']}")
+      display("Directory already connected to conflux bundle: #{manifest_json['app']['name']}")
     else
       # Get map of all user's apps grouped by team
       apps_map = Conflux::Api::Users.new.apps
@@ -53,7 +53,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       # Go ahead and perform `conflux pull`
       Conflux::Pull.perform
 
-      display("Successfully connected project to conflux app: #{manifest_json['app']['name']}")
+      display("Successfully connected project to conflux bundle: #{manifest_json['app']['name']}")
     end
 
     gitignore = File.join(Dir.pwd, '.gitignore')
@@ -73,7 +73,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       app_url = manifest_json['app']['url']
 
       if !app_url.nil?
-        display "Opening conflux app #{manifest_json['app']['name']}..."
+        display "Opening conflux bundle #{manifest_json['app']['name']}..."
         open_url(app_url)
       else
         display "Could not find valid app url inside your conflux manifest.json"

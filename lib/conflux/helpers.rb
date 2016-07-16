@@ -37,10 +37,10 @@ module Conflux
       $stdout.flush
     end
 
-    # Called if user tries to run a command that relies on there being a conflux app connected
+    # Called if user tries to run a command that relies on there being a conflux bundle connected
     # to the user's current working directory.
     def reply_no_conflux_app
-      display "Directory not currently connected to a conflux app.\n"\
+      display "Directory not currently connected to a conflux bundle.\n"\
       "Run \"conflux init\" to a establish a connection with one of your bundles."
 
       exit(0)
@@ -97,7 +97,7 @@ module Conflux
       table
     end
 
-    # Called during `conflux init` so that the user can choose which conflux app
+    # Called during `conflux init` so that the user can choose which conflux bundle
     # to connect with his current working directory.
     def prompt_user_to_select_app(apps_map)
       answer = nil
@@ -282,7 +282,7 @@ module Conflux
       klass.instance_methods(false)
     end
 
-    # Path for the git-ignored folder that holds all info tying a directory to a specific conflux app
+    # Path for the git-ignored folder that holds all info tying a directory to a specific conflux bundle
     def conflux_folder_path
       "#{Dir.pwd}/.conflux/"
     end
@@ -292,7 +292,7 @@ module Conflux
     end
 
     # Jobs file is just a text file with a comma-delimited set of strings referencing the conflux jobs
-    # that have already ran locally for a specific conflux app.
+    # that have already ran locally for a specific conflux bundle.
     def conflux_jobs_path
       File.join(conflux_folder_path, 'jobs.txt')
     end

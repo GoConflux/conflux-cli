@@ -28,7 +28,7 @@ class Conflux::Command::Bundles < Conflux::Command::AbstractCommand
       if name.nil?
         reply_no_conflux_app
       else
-        display "Directory currently connected to conflux app: #{name}"
+        display "Directory currently connected to conflux bundle: #{name}"
       end
     else
       reply_no_conflux_app
@@ -50,7 +50,7 @@ class Conflux::Command::Bundles < Conflux::Command::AbstractCommand
 
     Conflux::Pull.perform
 
-    display("Successfully connected project to conflux app: #{manifest_json['app']['name']}")
+    display("Successfully connected project to conflux bundle: #{manifest_json['app']['name']}")
   end
 
   def heroku_use
@@ -86,17 +86,17 @@ class Conflux::Command::Bundles < Conflux::Command::AbstractCommand
     end
 
     module Current
-      DESCRIPTION = 'Show which conflux app is connected to the current directory'
+      DESCRIPTION = 'Show which conflux bundle is connected to the current directory'
       VALID_ARGS = [ [] ]
     end
 
     module Use
-      DESCRIPTION = 'Set which conflux app to use for the current directory'
+      DESCRIPTION = 'Set which conflux bundle to use for the current directory'
       VALID_ARGS = [ ['BUNDLE'] ]
     end
 
     module HerokuUse
-      DESCRIPTION = 'Set which conflux app to use for a specific heroku app'
+      DESCRIPTION = 'Set which conflux bundle to use for a specific heroku app'
       VALID_ARGS = [ ['BUNDLE', '-a', 'HEROKU_APP'] ]
     end
 
