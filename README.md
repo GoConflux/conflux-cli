@@ -1,4 +1,4 @@
-# ![](http://confluxapp.s3-website-us-west-1.amazonaws.com/images/conflux-icon-colored.png) Conflux CLI (Toolbelt)
+## Conflux CLI (Toolbelt)
 
 The Conflux CLI is used to manage Conflux Add-on bundles from the command line.
 
