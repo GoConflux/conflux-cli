@@ -2,7 +2,7 @@ require 'conflux/command/abstract_command'
 require_relative '../auth'
 require_relative '../langs'
 require_relative '../pull'
-require_relative '../api/apps'
+require_relative '../api/bundles'
 require_relative '../api/users'
 require 'fileutils'
 require 'json'
@@ -33,7 +33,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       display 'Configuring manifest.json...'
 
       # Fetch manifest info for that selected app
-      resp = Conflux::Api::Apps.new.manifest(selected_app_slug)
+      resp = Conflux::Api::Bundles.new.manifest(selected_app_slug)
       manifest_json = resp['manifest']
 
       # Create /.conflux/ folder if doesn't already exist
@@ -89,7 +89,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
   end
 
   def cost
-    resp = Conflux::Api::Apps.new.cost(@args)
+    resp = Conflux::Api::Bundles.new.cost(@args)
     display "#{resp['app_slug']} monthly cost: #{resp['cost']}"
   end
 
@@ -99,7 +99,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
   end
 
   def configs
-    configs_map = Conflux::Api::Apps.new.configs(@args)
+    configs_map = Conflux::Api::Bundles.new.configs(@args)
 
     if configs_map.empty?
       puts 'No config vars currently exist for this app.'
@@ -144,12 +144,12 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     end
 
     module Init
-      DESCRIPTION = 'Connect current directory to one of your conflux apps'
+      DESCRIPTION = 'Connect current directory to one of your conflux bundles'
       VALID_ARGS = [ [] ]
     end
 
     module Open
-      DESCRIPTION = 'Open Web UI for current conflux app'
+      DESCRIPTION = 'Open Web UI for current conflux bundle'
       VALID_ARGS = [ [] ]
     end
 
@@ -159,8 +159,8 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     end
 
     module Cost
-      DESCRIPTION = 'View the monthly cost for a conflux app'
-      VALID_ARGS = [ [], ['-a', 'APP'] ]
+      DESCRIPTION = 'View the monthly cost for a conflux bundle'
+      VALID_ARGS = [ [], ['-b', 'BUNDLE'] ]
       NO_APP_MEANS_LOCAL = true
     end
 
@@ -170,8 +170,8 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     end
 
     module Configs
-      DESCRIPTION = 'List all configs for a conflux app'
-      VALID_ARGS = [ [], ['-a', 'APP'] ]
+      DESCRIPTION = 'List all configs for a conflux bundle'
+      VALID_ARGS = [ [], ['-b', 'BUNDLE'] ]
       NO_APP_MEANS_LOCAL = true
     end
 

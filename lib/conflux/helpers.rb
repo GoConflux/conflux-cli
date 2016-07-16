@@ -41,7 +41,7 @@ module Conflux
     # to the user's current working directory.
     def reply_no_conflux_app
       display "Directory not currently connected to a conflux app.\n"\
-      "Run \"conflux init\" to a establish a connection with one of your apps."
+      "Run \"conflux init\" to a establish a connection with one of your bundles."
 
       exit(0)
     end

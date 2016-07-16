@@ -1,6 +1,6 @@
 require 'conflux/api/abstract_api'
 
-class Conflux::Api::Apps < Conflux::Api::AbstractApi
+class Conflux::Api::Bundles < Conflux::Api::AbstractApi
 
   def extension
     '/apps'
@@ -9,7 +9,7 @@ class Conflux::Api::Apps < Conflux::Api::AbstractApi
   def manifest(app_slug)
     get("#{extension}/manifest",
       data: { app_slug: app_slug },
-      error_message: 'Error connecting to conflux app'
+      error_message: 'Error connecting to conflux bundle'
     )
   end
 

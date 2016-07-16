@@ -8,7 +8,7 @@ module Conflux
     extend Conflux::Helpers
     extend self
 
-    CMD_BLACKLIST = ['APP', 'ADDON', 'TEAM', 'EMAIL', 'HEROKU_APP', 'NEW_APP']
+    CMD_BLACKLIST = ['BUNDLE', 'ADDON', 'TEAM', 'EMAIL', 'HEROKU_APP', 'NEW_BUNDLE']
 
     # Finds file/method for command
     def find_command(cmd, args = [])
@@ -95,7 +95,7 @@ module Conflux
     end
 
     # Get a command klass back from a file path:
-    # Example I/O: 'command/apps' --> Conflux::Command::Apps
+    # Example I/O: 'command/bundles' --> Conflux::Command::Bundles
     def klass_for_file(file)
       # Get basename for the file without the extension
       basename = get_basename_from_file(file)

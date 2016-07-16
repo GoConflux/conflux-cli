@@ -1,11 +1,11 @@
 require 'conflux/command/abstract_command'
 require_relative '../api/users'
-require_relative '../api/apps'
+require_relative '../api/bundles'
 require_relative '../pull'
 require 'fileutils'
 require 'open3'
 
-class Conflux::Command::Apps < Conflux::Command::AbstractCommand
+class Conflux::Command::Bundles < Conflux::Command::AbstractCommand
 
   def index
     apps_map = Conflux::Api::Users.new.apps
@@ -37,7 +37,7 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
 
   def use
     # Fetch manifest info for that selected app
-    manifest_json = Conflux::Api::Apps.new.manifest(@args[0])['manifest']
+    manifest_json = Conflux::Api::Bundles.new.manifest(@args[0])['manifest']
 
     # Create new .conflux/ folder
     FileUtils.rm_rf(conflux_folder_path)
@@ -54,7 +54,7 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
   end
 
   def heroku_use
-    creds = Conflux::Api::Apps.new.team_user_app_tokens(@args[0])
+    creds = Conflux::Api::Bundles.new.team_user_app_tokens(@args[0])
     heroku_check = running_on_windows? ? Open3.capture3('where heroku') : Open3.capture3('which heroku')
 
     if heroku_check.first.empty?
@@ -68,12 +68,12 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
 
     with_tty do
       system "heroku config:set CONFLUX_USER=#{creds['CONFLUX_USER']} CONFLUX_APP=#{creds['CONFLUX_APP']} -a #{@args[2]}"
-      display "Successfully connected Heroku app '#{@args[2]}' to conflux app '#{@args[0]}'."
+      display "Successfully connected Heroku app '#{@args[2]}' to conflux bundle '#{@args[0]}'."
     end
   end
 
   def clone
-    display "Cloning apps coming soon!"
+    display "Cloning bundles coming soon!"
   end
 
   #--------------------------------- -------------------------------------------
@@ -81,7 +81,7 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
   module CommandInfo
 
     module Index
-      DESCRIPTION = 'List all of your conflux apps'
+      DESCRIPTION = 'List all of your conflux bundles'
       VALID_ARGS = [ [] ]
     end
 
@@ -92,17 +92,17 @@ class Conflux::Command::Apps < Conflux::Command::AbstractCommand
 
     module Use
       DESCRIPTION = 'Set which conflux app to use for the current directory'
-      VALID_ARGS = [ ['APP'] ]
+      VALID_ARGS = [ ['BUNDLE'] ]
     end
 
     module HerokuUse
       DESCRIPTION = 'Set which conflux app to use for a specific heroku app'
-      VALID_ARGS = [ ['APP', '-a', 'HEROKU_APP'] ]
+      VALID_ARGS = [ ['BUNDLE', '-a', 'HEROKU_APP'] ]
     end
 
     module Clone
-      DESCRIPTION = 'Clone a conflux app'
-      VALID_ARGS = [ ['APP', 'NEW_APP'] ]
+      DESCRIPTION = 'Clone a conflux bundle'
+      VALID_ARGS = [ ['BUNDLE', 'NEW_BUNDLE'] ]
     end
 
   end
