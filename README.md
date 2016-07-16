@@ -12,4 +12,4 @@ To contribute to this repo, submit a pull request or raise an issue in the issue
 
 # License
 
-MIT
+[MIT License](http://opensource.org/licenses/MIT).
