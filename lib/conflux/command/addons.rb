@@ -56,7 +56,7 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
     module Index
       DESCRIPTION = 'List addons for a specific conflux bundle'
       VALID_ARGS = [ [], ['-b', 'BUNDLE'] ]
-      NO_APP_MEANS_LOCAL = true
+      NO_BUNDLE_MEANS_LOCAL = true
     end
 
     module All
@@ -67,13 +67,13 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
     module Add
       DESCRIPTION = 'Add an addon to a conflux bundle'
       VALID_ARGS = [ ['ADDON'], ['ADDON', '-b', 'BUNDLE'] ]
-      NO_APP_MEANS_LOCAL = true
+      NO_BUNDLE_MEANS_LOCAL = true
     end
 
     module Remove
       DESCRIPTION = 'Remove an addon from a conflux bundle'
       VALID_ARGS = [ ['ADDON'], ['ADDON', '-b', 'BUNDLE'] ]
-      NO_APP_MEANS_LOCAL = true
+      NO_BUNDLE_MEANS_LOCAL = true
     end
 
     module Plans

@@ -172,7 +172,7 @@ module Conflux
     end
 
     def use_local_app_if_not_defined?(command_info_module)
-      command_info_module.const_defined?('NO_APP_MEANS_LOCAL') ? command_info_module::NO_APP_MEANS_LOCAL : false
+      command_info_module.const_defined?('NO_BUNDLE_MEANS_LOCAL') ? command_info_module::NO_BUNDLE_MEANS_LOCAL : false
     end
 
     # stdin is `conflux help` or `conflux -h`

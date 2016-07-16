@@ -161,7 +161,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     module Cost
       DESCRIPTION = 'View the monthly cost for a conflux bundle'
       VALID_ARGS = [ [], ['-b', 'BUNDLE'] ]
-      NO_APP_MEANS_LOCAL = true
+      NO_BUNDLE_MEANS_LOCAL = true
     end
 
     module Teams
@@ -172,7 +172,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     module Configs
       DESCRIPTION = 'List all configs for a conflux bundle'
       VALID_ARGS = [ [], ['-b', 'BUNDLE'] ]
-      NO_APP_MEANS_LOCAL = true
+      NO_BUNDLE_MEANS_LOCAL = true
     end
 
     module Update
