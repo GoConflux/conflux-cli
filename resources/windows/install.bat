@@ -5,7 +5,7 @@
 
 @echo off
 
-set CONFLUX_CLI_URL="http://confluxapp.s3-website-us-west-1.amazonaws.com/toolbelt/conflux-cli.tgz"
+set CONFLUX_CLI_URL="https://ds8ypexjwou5.cloudfront.net/toolbelt/conflux-cli.tgz"
 
 :: Remove existing conflux directories/files just in case
 cd /d C:\Program Files\

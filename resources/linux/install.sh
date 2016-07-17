@@ -1,6 +1,6 @@
 #!/bin/sh
 {
-    CONFLUX_CLI_URL="http://confluxapp.s3-website-us-west-1.amazonaws.com/toolbelt/conflux-cli.tgz"
+    CONFLUX_CLI_URL="https://ds8ypexjwou5.cloudfront.net/toolbelt/conflux-cli.tgz"
 
     echo "This script requires superuser access to install software."
     echo "You will be prompted for your password by sudo."
