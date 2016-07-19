@@ -28,9 +28,14 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
 
     resp = Conflux::Api::Addons.new.add(app_slug, addon_slug, plan)
 
-    display "Successfully added #{addon_slug} to #{resp['app_slug'] || app_slug}."
-
-    Conflux::Pull.perform
+    if !!resp['plan_disabled']
+      display "Plan not currently available. See 'conflux addons:plans #{addon_slug}' for a list of available plans."
+    elsif !!resp['addon_already_exists']
+      display "Add-on already exists for this bundle."
+    else
+      display "Successfully added #{addon_slug} to #{resp['app_slug'] || app_slug}."
+      Conflux::Pull.perform
+    end
   end
 
   def remove
@@ -46,7 +51,7 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
 
   def plans
     plans_info = Conflux::Api::Addons.new.plans(@args[0])
-    puts to_table(plans_info, ['slug', 'name', 'cost'])
+    puts to_table(plans_info, ['slug', 'name', 'cost', 'status'])
   end
 
   #----------------------------------------------------------------------------
