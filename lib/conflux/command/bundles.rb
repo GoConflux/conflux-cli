@@ -73,7 +73,25 @@ class Conflux::Command::Bundles < Conflux::Command::AbstractCommand
   end
 
   def clone
-    display "Cloning bundles coming soon!"
+    source_app_slug = @args[0]
+    dest_app_name = @args[1]
+    app_exists = Conflux::Api::Bundles.new.exists?(source_app_slug)
+
+    if !app_exists['exists']
+      display "No available bundle named '#{source_app_slug}'"
+      return
+    end
+
+    tier_stage = ask_mult_choice_question(
+      'Which tier do you want your cloned bundle to reside in?',
+      ['Local Development', 'Cloud Development', 'Staging', 'Production']
+    )
+
+    display 'Cloning bundle...'
+
+    Conflux::Api::Bundles.new.clone(app_exists['uuid'], dest_app_name, tier_stage)
+
+    display "Successfully cloned bundle."
   end
 
   #--------------------------------- -------------------------------------------

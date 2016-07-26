@@ -41,4 +41,20 @@ class Conflux::Api::Bundles < Conflux::Api::AbstractApi
     )
   end
 
+  def exists?(app_slug)
+    get("#{extension}/exists",
+      data: { app_slug: app_slug }
+    )
+  end
+
+  def clone(source_app_uuid, dest_app_name, tier_stage)
+    post("#{extension}/clone",
+      data: {
+        app_uuid: source_app_uuid,
+        dest_app_name: dest_app_name,
+        tier_stage: tier_stage
+      }
+    )
+  end
+
 end
