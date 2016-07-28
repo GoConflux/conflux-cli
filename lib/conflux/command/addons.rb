@@ -39,7 +39,7 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
     end
   end
 
-  def remover
+  def remove
     addon_slug, plan = @args.first.split(':')
     app_slug = @args[2]
 
