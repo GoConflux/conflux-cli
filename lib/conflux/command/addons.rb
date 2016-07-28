@@ -13,7 +13,7 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
       return
     end
 
-    puts to_table(addons, ['slug', 'name', 'plan', 'cost'])
+    puts to_table(addons, ['slug', 'name', 'scope', 'plan', 'cost'])
   end
 
   def all
@@ -25,20 +25,21 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
   def add
     addon_slug, plan = @args.first.split(':')
     app_slug = @args[2]
+    scope = (@args.last == '--me') ? 1 : 0
 
-    resp = Conflux::Api::Addons.new.add(app_slug, addon_slug, plan)
+    resp = Conflux::Api::Addons.new.add(app_slug, addon_slug, plan, scope)
 
     if !!resp['plan_disabled']
       display "Plan not currently available. See 'conflux addons:plans #{addon_slug}' for a list of available plans."
     elsif !!resp['addon_already_exists']
-      display "Add-on already exists for this bundle."
+      display "#{addon_slug} already exists as a #{scope == 1 ? 'personal' : 'shared'} add-on for this bundle."
     else
-      display "Successfully added #{addon_slug} to #{resp['app_slug'] || app_slug}."
-      Conflux::Pull.perform
+      display "Successfully added #{addon_slug} to #{resp['app_slug'] || app_slug}#{scope == 1 ? ' as personal add-on' : ''}."
+      Conflux::Pull.perform if app_slug.nil?
     end
   end
 
-  def remove
+  def remover
     addon_slug, plan = @args.first.split(':')
     app_slug = @args[2]
 
@@ -46,7 +47,7 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
 
     display "Successfully removed #{addon_slug} from #{resp['app_slug'] || app_slug}."
 
-    Conflux::Pull.perform
+    Conflux::Pull.perform if app_slug.nil?
   end
 
   def plans
@@ -71,7 +72,7 @@ class Conflux::Command::Addons < Conflux::Command::AbstractCommand
 
     module Add
       DESCRIPTION = 'Add an addon to a conflux bundle'
-      VALID_ARGS = [ ['ADDON'], ['ADDON', '-b', 'BUNDLE'] ]
+      VALID_ARGS = [ ['ADDON'], ['ADDON', '--me'], ['ADDON', '-b', 'BUNDLE'], ['ADDON', '-b', 'BUNDLE', '--me'] ]
       NO_BUNDLE_MEANS_LOCAL = true
     end
 

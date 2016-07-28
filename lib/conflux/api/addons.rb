@@ -24,12 +24,13 @@ class Conflux::Api::Addons < Conflux::Api::AbstractApi
     )
   end
 
-  def add(app_slug, addon_slug, plan)
+  def add(app_slug, addon_slug, plan, scope)
     post('/app_addons',
       data: {
         app_slug: app_slug,
         addon_slug: addon_slug,
-        plan: plan
+        plan: plan,
+        scope: scope
       },
       headers: conditional_headers(app_slug.nil?)
     )
