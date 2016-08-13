@@ -14,8 +14,8 @@ module Conflux
       File.open(conflux_yml_path, 'w+') do |f|
         f.write(yaml_header)
 
-        # configs_map has addon names for keys and arrays of config vars for those addons (respectively) as its values.
-        # This yaml file will therefore group the conflux config vars by addon
+        # configs_map has service names for keys and arrays of config vars for those services (respectively) as its values.
+        # This yaml file will therefore group the conflux config vars by service
         configs_map.each { |addon_name, configs|
           f.write("\n\n# #{addon_name}") if !configs.empty?
 

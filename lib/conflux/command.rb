@@ -8,7 +8,7 @@ module Conflux
     extend Conflux::Helpers
     extend self
 
-    CMD_BLACKLIST = ['BUNDLE', 'ADDON', 'TEAM', 'EMAIL', 'HEROKU_APP', 'NEW_BUNDLE']
+    CMD_BLACKLIST = ['BUNDLE', 'SERVICE', 'TEAM', 'EMAIL', 'HEROKU_APP', 'NEW_BUNDLE']
 
     # Finds file/method for command
     def find_command(cmd, args = [])
@@ -19,7 +19,7 @@ module Conflux
       respond_with_version if seeking_version?
 
       # Separate out primary/secondary commands based on if command was namespaced
-      # e.g. `conflux addons vs. conflux addons:add`
+      # e.g. `conflux services vs. conflux services:add`
       primary_cmd, secondary_cmd = @current_cmd.split(':')
 
       # Get the command file path (string) for the primary command
@@ -33,7 +33,7 @@ module Conflux
       if !secondary_cmd.nil?
         error_no_command if !primary_cmd_file_exists
 
-        # Get command_klass for file path. Example response --> Conflux::Command::Addons
+        # Get command_klass for file path. Example response --> Conflux::Command::Services
         command_klass = klass_for_file(primary_cmd_file)
 
         # Error out if the command klass doesn't have a method named <secondary_cmd>
@@ -56,7 +56,7 @@ module Conflux
         # Number 1 above. If primary_cmd file exists, call the index method on it if it exists.
         # If index method doens't exist, check to see if method is a global command.
         if primary_cmd_file_exists
-          # Get command_klass for file path. Example response --> Conflux::Command::Addons
+          # Get command_klass for file path. Example response --> Conflux::Command::Services
           command_klass = klass_for_file(primary_cmd_file)
 
           klass_has_method?(command_klass, 'index') ? run(command_klass, 'index') : try_global.call

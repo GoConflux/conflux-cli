@@ -1,6 +1,6 @@
 require 'conflux/api/abstract_api'
 
-class Conflux::Api::Addons < Conflux::Api::AbstractApi
+class Conflux::Api::Services < Conflux::Api::AbstractApi
 
   def extension
     '/addons'
@@ -19,7 +19,6 @@ class Conflux::Api::Addons < Conflux::Api::AbstractApi
 
   def plans(addon_slug)
     get("#{extension}/plans",
-
       data: { addon_slug: addon_slug }
     )
   end
