@@ -4,7 +4,7 @@ The Conflux CLI is used to manage Conflux Add-on bundles and more from the comma
 
 For more about Conflux, see <https://www.goconflux.com>
 
-To get started, see <https://www.goconflux.com/toolbelt>
+To get started, see <https://www.goconflux.com/download>
 
 ## Contributing
 
