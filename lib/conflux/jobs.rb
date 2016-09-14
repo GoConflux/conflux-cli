@@ -77,8 +77,8 @@ module Conflux
       # Ensure all parent directories of the file exist
       FileUtils.mkdir_p(File.dirname(dest_file))
 
-      # Create url for file from Conflux's S3 --> asset['contents'] should start with '/'
-      url = "#{s3_url}#{asset['contents']}"
+      # Create url for file from Conflux's S3 base url.
+      url = "#{s3_url}/#{asset['contents']}"
 
       # Get wget or curl depending on which is installed. Error out if neither are installed.
       cmd = cmd_for_file_fetch(quiet: true)
