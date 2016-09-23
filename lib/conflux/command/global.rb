@@ -18,7 +18,15 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
   end
 
   def join
-    Conflux::Auth.join
+    existing_creds = Conflux::Auth.read_credentials
+
+    # If Conflux credentials exist for an account, state that you're already logged in as <email>.
+    unless existing_creds.nil?
+      display "Already logged into Conflux as #{existing_creds.first}.\nRun 'conflux logout' first before joining as another user."
+      exit_no_error
+    end
+
+    Conflux::Auth.login(new_user: true)
   end
 
   def init

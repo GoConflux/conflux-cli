@@ -7,21 +7,22 @@ class Conflux::Api::Users < Conflux::Api::AbstractApi
   end
 
   def login(email, password)
-    resp = post("#{extension}/login",
+    post("#{extension}/login",
       data: {
         email: email,
         password: password
       },
       auth_required: false,
-      error_message: 'Authentication failed'
+      error_message: 'Authentication failed.'
     )
-
-    resp['user_token']
   end
 
-  def join(email)
+  def join(email, password)
     post("#{extension}/join",
-      data: { email: email },
+      data: {
+        email: email,
+        password: password
+      },
       auth_required: false,
       error_message: 'Failed to join Conflux. Unknown error.'
     )
