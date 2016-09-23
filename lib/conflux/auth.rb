@@ -39,6 +39,38 @@ module Conflux
       end
     end
 
+    def join
+      existing_creds = read_credentials
+
+      # if Conflux credentials exist for an account, state that you're already logged in as <email>.
+      if !existing_creds.nil?
+        display "Already logged into Conflux as #{existing_creds.first}.\nRun 'conflux logout' first before joining as another user."
+        exit_no_error
+      end
+
+      # Get user-provided email for the new account.
+      email = ask_free_response_question('Enter an email to use for Conflux.', 'Email: ')
+
+      # Create a new account for them with a temporary password, and send them back a user_token
+      # to store in netrc as their CLI password
+      new_user_response = Conflux::Api::Users.new.join(email)
+
+      if new_user_response['error'] == 'EmailTaken'
+        display 'Email already taken. Try again with another email.'
+        exit_no_error
+      end
+
+      # Set and store these new user credentials in netrc.
+      @credentials = [email, new_user_response['user_token']]
+      write_credentials
+
+      display([
+        "Joined Conflux as #{email}.",
+        "A new Conflux bundle, #{new_user_response['bundle']}, has been created for you.",
+        "Run 'conflux init' inside your project's root directory to connect to your new bundle."
+      ].join("\n"))
+    end
+
     def write_credentials
       # Create all the parent directories for the .netrc file if they don't already exist
       FileUtils.mkdir_p(File.dirname(netrc_path))

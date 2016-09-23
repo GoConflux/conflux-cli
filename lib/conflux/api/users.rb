@@ -19,6 +19,14 @@ class Conflux::Api::Users < Conflux::Api::AbstractApi
     resp['user_token']
   end
 
+  def join(email)
+    post("#{extension}/join",
+      data: { email: email },
+      auth_required: false,
+      error_message: 'Failed to join Conflux. Unknown error.'
+    )
+  end
+
   def apps
     get("#{extension}/apps")
   end

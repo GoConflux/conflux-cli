@@ -17,6 +17,10 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     Conflux::Auth.logout
   end
 
+  def join
+    Conflux::Auth.join
+  end
+
   def init
     ensure_authed
 
@@ -37,7 +41,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
       manifest_json = resp['manifest']
 
       # Create /.conflux/ folder if doesn't already exist
-      FileUtils.mkdir_p(conflux_folder_path) if !File.exists?(conflux_folder_path)
+      FileUtils.mkdir_p(conflux_folder_path) unless File.exists?(conflux_folder_path)
 
       # Write this app info to a new manifest.json file for the user
       File.open(conflux_manifest_path, 'w+') do |f|
@@ -140,6 +144,11 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
     module Logout
       DESCRIPTION = 'Log out of your conflux account'
+      VALID_ARGS = [ [] ]
+    end
+
+    module Join
+      DESCRIPTION = 'Join Conflux as a new user'
       VALID_ARGS = [ [] ]
     end
 

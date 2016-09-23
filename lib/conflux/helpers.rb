@@ -19,7 +19,15 @@ module Conflux
 
     def error(msg = '')
       $stderr.puts(format_with_bang(msg))
+      exit_with_error
+    end
+
+    def exit_with_error
       exit(1)
+    end
+
+    def exit_no_error
+      exit(0)
     end
 
     # Add a bang to an error message
@@ -43,7 +51,7 @@ module Conflux
       display "Directory not currently connected to a conflux bundle.\n"\
       "Run \"conflux init\" to a establish a connection with one of your bundles."
 
-      exit(0)
+      exit_no_error
     end
 
     # convert string from underscores to camelcase

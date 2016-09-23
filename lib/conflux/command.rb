@@ -193,7 +193,7 @@ module Conflux
 
       puts "\n#{header}"
       puts "\n#{commands_info}\n\n"
-      exit(0)
+      exit_no_error
     end
 
     # Create a commands map to respond to `conflux help` with.
@@ -264,7 +264,7 @@ module Conflux
 
     def respond_with_version
       display "conflux #{Conflux::VERSION}"
-      exit(0)
+      exit_no_error
     end
 
     # Return just the basename for a file, no extensions.
