@@ -33,11 +33,12 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
 
       # Ask user which app this project belongs to:
       selected_app_slug = prompt_user_to_select_app(apps_map)
+      new_app = selected_app_slug === 'NEW_BUNDLE'
 
       display 'Configuring manifest.json...'
 
       # Fetch manifest info for that selected app
-      resp = Conflux::Api::Bundles.new.manifest(selected_app_slug)
+      resp = Conflux::Api::Bundles.new.manifest(selected_app_slug, new_app)
       manifest_json = resp['manifest']
 
       # Create /.conflux/ folder if doesn't already exist

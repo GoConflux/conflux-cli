@@ -6,9 +6,12 @@ class Conflux::Api::Bundles < Conflux::Api::AbstractApi
     '/apps'
   end
 
-  def manifest(app_slug)
+  def manifest(app_slug, new_app = false)
     get("#{extension}/manifest",
-      data: { app_slug: app_slug },
+      data: {
+        app_slug: app_slug,
+        new_app: new_app
+      },
       error_message: 'Error connecting to conflux bundle'
     )
   end

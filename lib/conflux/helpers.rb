@@ -109,11 +109,10 @@ module Conflux
     # to connect with his current working directory.
     def prompt_user_to_select_app(apps_map)
       answer = nil
-      question = "\nWhich Conflux bundle do you wish to use for this project?\n"
+      question = "\nWhich Conflux bundle do you wish to use for this project?\n\n(0) * Create New Bundle *\n\n--------------------------\n"
 
       # Keep asking until the user responds with one of the possible answers
       until !answer.nil?
-        count = 0
         app_slugs = []
 
         puts question
@@ -121,9 +120,8 @@ module Conflux
         apps_map.each { |team, apps|
           puts "\n#{team}:\n\n"   # separate apps out by team for easier selection
 
-          apps.each { |slug|
-            count += 1
-            puts "(#{count}) #{slug}"
+          apps.each_with_index { |slug, i|
+            puts "(#{i+1}) #{slug}"
             app_slugs << slug
           }
         }
@@ -135,11 +133,17 @@ module Conflux
         # it's fine if the user responds with an exact app slug
         if app_slugs.include?(response)
           answer = response
-
-        # otherwise, they can just respond with the number next to the app they wish to choose
         else
+          # otherwise, they can just respond with the number next to the app they wish to choose
           response_int = response.to_i rescue 0
-          answer = app_slugs[response_int - 1 ]if response_int > 0
+
+          if response_int < 0
+            answer = nil
+          elsif response_int == 0
+            answer = 'NEW_BUNDLE'
+          else
+            answer = app_slugs[response_int]
+          end
         end
 
         question = "\nSorry I didn't catch that. Can you respond with the number that appears next to your answer?"
