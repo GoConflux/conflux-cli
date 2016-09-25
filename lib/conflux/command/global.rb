@@ -148,6 +148,7 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     module Login
       DESCRIPTION = 'Login to your conflux account'
       VALID_ARGS = [ [] ]
+      HELP_INDEX = 1
     end
 
     module Logout
@@ -156,18 +157,21 @@ class Conflux::Command::Global < Conflux::Command::AbstractCommand
     end
 
     module Join
-      DESCRIPTION = 'Join Conflux as a new user'
+      DESCRIPTION = 'Join conflux as a new user'
       VALID_ARGS = [ [] ]
+      HELP_INDEX = 0
     end
 
     module Init
       DESCRIPTION = 'Connect current directory to one of your conflux bundles'
       VALID_ARGS = [ [] ]
+      HELP_INDEX = 2
     end
 
     module Open
       DESCRIPTION = 'Open Web UI for current conflux bundle'
       VALID_ARGS = [ [] ]
+      HELP_INDEX = 4
     end
 
     module Pull

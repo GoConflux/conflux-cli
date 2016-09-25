@@ -171,6 +171,10 @@ module Conflux
       command_info_module.const_defined?('DESCRIPTION') ? command_info_module::DESCRIPTION : ''
     end
 
+    def command_help_index(command_info_module)
+      command_info_module.const_defined?('HELP_INDEX') ? command_info_module::HELP_INDEX : nil
+    end
+
     def use_local_app_if_not_defined?(command_info_module)
       command_info_module.const_defined?('NO_BUNDLE_MEANS_LOCAL') ? command_info_module::NO_BUNDLE_MEANS_LOCAL : false
     end
@@ -224,15 +228,29 @@ module Conflux
       commands_column_width = keys.max_by(&:length).length + 1
       commands_column_width += 2 if commands_column_width < 12
 
-      # iterate through each of the commands, create an array
-      # of strings in a `<command>  #  <description>` format. Sort
-      # them alphabetically, and then join them with new lines.
-      keys.map { |key|
+      important = []
+      others = []
+
+      # iterate through each of the commands, and create a string
+      # with the format: `<command>  #  <description>`. Then push the
+      # string into the correct array: important vs. others.
+      keys.each { |key|
         command = "  #{key}"
         command += (' ' * (commands_column_width - key.length + 1))
         command += "#  #{map[key][:description]}"
-        command
-      }.sort_by{ |k| k.downcase }.join("\n")
+
+        help_index = map[key][:help_index] # specified if command is "important".
+
+        if help_index.nil?
+          others.push(command)
+        else
+          important[help_index] = command
+        end
+      }
+
+      others = others.sort_by{ |k| k.downcase }
+
+      (important + ["\n-------------\n"] + others).join("\n")
     end
 
     # Seeking command-specific help. e.g. `conflux bundles --help`
@@ -289,7 +307,10 @@ module Conflux
 
       command_info_module = command_class::CommandInfo.const_get(camelize(action))
 
-      commands[command] = { description: command_description(command_info_module) }
+      commands[command] = {
+        description: command_description(command_info_module),
+        help_index: command_help_index(command_info_module)
+      }
     end
 
   end

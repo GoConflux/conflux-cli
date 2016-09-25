@@ -74,6 +74,7 @@ class Conflux::Command::Services < Conflux::Command::AbstractCommand
       DESCRIPTION = 'Add a service to a conflux bundle'
       VALID_ARGS = [ ['SERVICE'], ['SERVICE', '--me'], ['SERVICE', '-b', 'BUNDLE'], ['SERVICE', '-b', 'BUNDLE', '--me'] ]
       NO_BUNDLE_MEANS_LOCAL = true
+      HELP_INDEX = 3
     end
 
     module Remove
